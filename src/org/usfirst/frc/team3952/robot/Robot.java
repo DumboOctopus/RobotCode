@@ -54,13 +54,14 @@ public class Robot extends IterativeRobot {
 								 rearRight);
 								 
 		backgroundTask = new NullTask();
-		rightEncoder = new Encoder(2, 3, false, Encoder.EncodingType.k4X); //we can also try k4 for more accuracy.
+		rightEncoder = new Encoder(2, 3, false, Encoder.EncodingType.k2X); //we can also try k4 for more accuracy.
+		rightEncoder.setDistancePerPulse(0.0078);
 		//rightEncoder.setDistancePerPulse(1.23 * 3/500.0);
-		rightEncoder.setDistancePerPulse(1.26 * 0.011747);
+		//rightEncoder.setDistancePerPulse(1.26 * 0.011747);
 		//20 pulses per rotation
 		leftEncoder = new Encoder(1, 0, false, Encoder.EncodingType.k2X);
-		leftEncoder.setDistancePerPulse(1.26 * 0.011747);//1.23 * 3/500.0);
-		ladderEncoder = new Encoder(parameter, parameter, parameter, parameter);	// idk what parameters go here
+		leftEncoder.setDistancePerPulse(0.00677);
+		//leftEncoder.setDistancePerPulse(1.26 * 0.011747);//1.23 * 3/500.0);
 		
 		ladder = new Ladder(ladderT, coiler, claw, ladderEncoder);
 		
@@ -120,8 +121,9 @@ public class Robot extends IterativeRobot {
 		
 		SmartDashboard.putString("Current Task", currentTask.toString());
 		SmartDashboard.putString("Gyro: ", "" + gyro.getAngle());
-		SmartDashboard.putString("Right Encoder teleop: ", "" + rightEncoder.getDistance());
-		SmartDashboard.putString("Left Encoder teleop", ""+ leftEncoder.getDistance());
+		SmartDashboard.putString("Gyro Rate", "" + gyro.getRate());
+		SmartDashboard.putString("Encoders right", "" + rightEncoder.getDistance());
+		SmartDashboard.putString("Encoders left", ""+ leftEncoder.getDistance());
 		
 		SmartDashboard.putString("Front Left", "" + frontLeft.get());
 		SmartDashboard.putString("Front Right", "" + frontRight.get());
@@ -132,7 +134,9 @@ public class Robot extends IterativeRobot {
 	
 	//=====================================AUTONOMOUS======================================//
 	
-	
+	/**
+	 * This will run every time you press enable in auto
+	 */
 	@Override
 	public void autonomousInit(){
 		String stuff = DriverStation.getInstance().getGameSpecificMessage(); //ex: LRL
@@ -143,30 +147,28 @@ public class Robot extends IterativeRobot {
 		
 		//need to adapt chris's code
 		//setting up queue
-		//autonomousQueue.add(new MoveForwardTask(this, 2));
+		autonomousQueue.add(new MoveForwardTask(this, 2));
 		//autonomousQueue.add(new TurnTask(this, 90));
 		//autonomousQueue.add(new TurnTask(this, -90));
 		//autonomousQueue.add(new TurnTask(this, 360));
 		//autonomousQueue.add(
 		//      new MultiTask(new TurnTask(this, 90), new LadderUpTask(this, 4)
 		//);
-		// first 5.58
-		//second 4.5
-		// third 5.8
-		// fourth 5.7
-		autonomousQueue.add(new MoveForwardTask(this, 3));
+		//autonomousQueue.add(new TurnTask(this, 90));
+		
 	}
 	
 	@Override
 	public void autonomousPeriodic(){
+		SmartDashboard.putString("Autonomous Queue", autonomousQueue.toString());
 		if(!autonomousQueue.isEmpty()){
 			if(autonomousQueue.peek().run()){
 				autonomousQueue.poll();
 			}
 			SmartDashboard.putString("Current Task", currentTask.toString());
 			SmartDashboard.putString("Gyro: ", "" + gyro.getAngle());
-			SmartDashboard.putString("Encoders right autonomous", "" + rightEncoder.getDistance());
-			SmartDashboard.putString("Encoders left autonomous", "" + leftEncoder.getDistance());
+			SmartDashboard.putString("Encoders right", "" + rightEncoder.getDistance());
+			SmartDashboard.putString("Encoders left", "" + leftEncoder.getDistance());
 		}
 		
 	}

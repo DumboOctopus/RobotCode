@@ -1,0 +1,70 @@
+<xml version="1.0">
+<dashboard>
+	<widget field="Gyro Rate" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="0" y="166"/>
+	</widget>
+	<widget field="Encoders left" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="0" y="120"/>
+	</widget>
+	<widget field="Encoders right" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="0" y="99"/>
+	</widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="294" y="14"/>
+		<property name="Text" value="JOysticks"/>
+	</static-widget>
+	<widget field="Autonomous Initial Position" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="12" y="308"/>
+	</widget>
+	<widget field="Rear Left" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="327" y="267"/>
+	</widget>
+	<widget field="Current Task" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="389" y="363"/>
+	</widget>
+	<widget field="Lateral Movement" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="304" y="34"/>
+	</widget>
+	<widget field="Rear Right" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="329" y="245"/>
+	</widget>
+	<widget field="Front Right" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="331" y="192"/>
+	</widget>
+	<widget field="Gyro: " type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="88" y="145"/>
+	</widget>
+	<widget field="Horizontal Movement" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="298" y="55"/>
+	</widget>
+	<widget field="Front Left" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="330" y="219"/>
+	</widget>
+</dashboard>
+<live-window>
+	<widget field="Ungrouped" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
+		<widget field="ADXRS450_Gyro[0]" type="Gyro" class="edu.wpi.first.smartdashboard.gui.elements.Compass">
+			<location x="6" y="16"/>
+			<height>150</height>
+			<width>250</width>
+		</widget>
+		<widget field="Encoder[0]" type="Encoder" class="edu.wpi.first.smartdashboard.livewindow.elements.EncoderDisplay">
+			<location x="6" y="166"/>
+			<height>98</height>
+			<width>250</width>
+		</widget>
+		<widget field="Encoder[1]" type="Encoder" class="edu.wpi.first.smartdashboard.livewindow.elements.EncoderDisplay">
+			<location x="6" y="264"/>
+			<height>98</height>
+			<width>250</width>
+		</widget>
+		<location x="21" y="24"/>
+		<width>262</width>
+		<height>369</height>
+	</widget>
+</live-window>
+	<hidden field="Left Encoder teleop"/>
+	<hidden field="Right Encoder teleop: "/>
+	<hidden field="Encoders left autonomous"/>
+	<hidden field="Encoders right autonomous"/>
+</xml>

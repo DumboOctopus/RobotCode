@@ -65,7 +65,7 @@ public class StrafeAndForwardTask extends Task {
 	
 	
 	private double readEncoders(){
-		return (rightEncoder.getDistance() + leftEncoder.getDistance())/2.0;
+		return rightEncoder.getDistance();
 	}
 
 	@Override

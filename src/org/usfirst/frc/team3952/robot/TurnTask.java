@@ -13,6 +13,10 @@ public class TurnTask extends Task {
 	private double startingAngle;
 	private double degrees;
 	private boolean flag;		// set starting angle on first frame
+
+	//next thing: using System.millis() to do local linearization like a boss
+	private long lastMillis;
+	
 	
 	/**
 	 * Constructs a Turn Task task to turn degrees degrees
@@ -28,22 +32,32 @@ public class TurnTask extends Task {
 	
 	public boolean run(){
 		
+		//initialization stuffs
 		if(flag) {
 			flag = false;
 			startingAngle = gyro.getAngle() % 360;
+			lastMillis = System.currentTimeMillis();
 		}
 		
-		if(differenceAngle(gyro.getAngle() + gyro.getRate() * 0.06, startingAngle + degrees) < 1.0){
+		
+		long nowMillis = System.currentTimeMillis();
+		//check if we are done
+		if(differenceAngle(gyro.getAngle() + gyro.getRate() * (nowMillis - lastMillis)/1000.0, startingAngle + degrees) < 1.0){
 			drive.driveCartesian(0, 0, 0);
-			return true; //should die after this
+			lastMillis = nowMillis; //just in case it doesn't stop so nowMillis - lastMillis doesn't become so huge, condition is false
+			return true; //should stop after this
 			
 		}
 		
+		//move
 		if(degrees < 0){
 			drive.driveCartesian(0, 0, -0.25);
 		} else if (degrees > 0){
 			drive.driveCartesian(0, 0, 0.25);
 		} 
+		
+		//make sure to change last millis
+		lastMillis = nowMillis;
 		return false;
 	}
 	
