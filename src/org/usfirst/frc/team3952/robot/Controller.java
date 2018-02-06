@@ -28,7 +28,7 @@ public class Controller {
 	//TODO: lateral means side to side lol
 	// getLateral or Horizontal Movement = kln(|y| + 1 - deadzone) + C
 	// C = determined
-	// k = (MAX-C)/ln(1 + 1 -deadzone)		
+	// k = (MAX-C)/ln(1 + 1 - deadzone)		
 	private double Cy = 0.1;
 	private double deadzoney = 0.2;
 	private double MAXy = 0.8;

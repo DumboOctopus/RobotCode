@@ -21,10 +21,12 @@ public class Robot extends IterativeRobot {
 
 	private MecanumDrive drive;
 	private Task currentTask, backgroundTask;
-	private Encoder rightEncoder, leftEncoder;
+	private Encoder rightEncoder, leftEncoder, ladderEncoder;
 	private ADXRS450_Gyro gyro;
+	private Ladder ladder;
 	
 	private Talon frontLeft, frontRight, rearLeft, rearRight;
+	private Talon ladderT, coiler, claw;
 	
 	private Queue<Task> autonomousQueue;
 	private SendableChooser<String> autonomousChooser;
@@ -41,9 +43,12 @@ public class Robot extends IterativeRobot {
 		frontRight.setInverted(true);
 		rearRight.setInverted(true);
 		
+		ladderT = new Talon(-1);		// set to reasonable value
+		coiler = new Talon(-1);
+		claw = new Talon(-1);
 		
 		//init drive train
-		drive = new MecanumDrive(frontLeft, 
+		drive = new MecanumDrive(frontLeft,
 								 rearLeft, 
 								 frontRight, 
 								 rearRight);
@@ -55,7 +60,9 @@ public class Robot extends IterativeRobot {
 		//20 pulses per rotation
 		leftEncoder = new Encoder(1, 0, false, Encoder.EncodingType.k2X);
 		leftEncoder.setDistancePerPulse(1.26 * 0.011747);//1.23 * 3/500.0);
+		ladderEncoder = new Encoder(parameter, parameter, parameter, parameter);	// idk what parameters go here
 		
+		ladder = new Ladder(ladderT, coiler, claw, ladderEncoder);
 		
 		gyro = new ADXRS450_Gyro();
 		autonomousQueue = new LinkedList<>();
@@ -91,7 +98,7 @@ public class Robot extends IterativeRobot {
 		}
 		if(controller.cancelBackgroundTask()) {
 			backgroundTask.cancel();
-			//NOTE: Null Task never return true!!!
+			//NOTE: Null Task never returns true!!!
 			backgroundTask = new NullTask();
 		}
 		
