@@ -91,30 +91,18 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void teleopPeriodic() {
-		
+		if(!ladder.movingLadder) {
+			ladder.disablePID();
+		}
+		ladder.movingLadder = false;
 		
 		if(controller.cancelTask()) {
 			currentTask.cancel();
-			currentTask = new TeleopTask(this);
-		}
-		if(controller.cancelBackgroundTask()) {
-			backgroundTask.cancel();
-			//NOTE: Null Task never returns true!!!
-			backgroundTask = new NullTask();
+			currentTask = new MultiTask(new TeleopTask(this), null);
 		}
 		
-		
-		boolean done = currentTask.run();
-		//try {Thread.sleep(2000);} catch(InterruptedException ignored) {}
-		if(done){
-			currentTask = new TeleopTask(this);
-		}
-		
-		
-		//IMPORTANT NOTE: Null task.run never returns true.
-		boolean backDone = backgroundTask.run();
-		if(backDone){
-			backgroundTask = new NullTask();
+		if(currentTask.run()){
+			currentTask = new MultiTask(new TeleopTask(this), null);
 		}
 		
 		
