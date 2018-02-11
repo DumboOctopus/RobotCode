@@ -5,7 +5,6 @@ import java.util.*;
 import edu.wpi.first.wpilibj.drive.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 
 
 /**
@@ -13,6 +12,12 @@ import edu.wpi.first.wpilibj.ADXRS450_Gyro;
  * rear right 1
  * front right 2
  * front left 3
+ * 
+ * TODO: 
+ * 	See Controller
+ * 	See Ladder
+ * 	Clean up Garbage in Robot.
+ * 
  * 
  */
 public class Robot extends IterativeRobot {
@@ -30,6 +35,10 @@ public class Robot extends IterativeRobot {
 	
 	private Queue<Task> autonomousQueue;
 	private SendableChooser<String> autonomousChooser;
+	
+	
+	//Testing purposes
+	EncoderRate er;
 	
 	@Override
 	public void robotInit() {
@@ -61,6 +70,7 @@ public class Robot extends IterativeRobot {
 		//20 pulses per rotation
 		leftEncoder = new Encoder(1, 0, false, Encoder.EncodingType.k2X);
 		leftEncoder.setDistancePerPulse(0.00677);
+		ladderEncoder.setDistancePerPulse(1); //WE ARE NOT GOING TO CALIBRATE KEKEKEK.
 		//leftEncoder.setDistancePerPulse(1.26 * 0.011747);//1.23 * 3/500.0);
 		
 		ladder = new Ladder(ladderT, coiler, claw, ladderEncoder);
@@ -72,8 +82,10 @@ public class Robot extends IterativeRobot {
 		
 		autonomousChooser = new SendableChooser<>();
 		autonomousChooser.addObject("Starting Left", "L");
-		autonomousChooser.addObject("Starting Middle", "R");
+		autonomousChooser.addObject("Starting Middle", "M");
 		autonomousChooser.addDefault("Starting Right", "R");
+		
+		er = new EncoderRate();
 		SmartDashboard.putData("Autonomous Initial Position", autonomousChooser);
 	}
 	
@@ -91,32 +103,49 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void teleopPeriodic() {
+		
+		//ladder stuffs
 		if(!ladder.movingLadder) {
 			ladder.disablePID();
 		}
 		ladder.movingLadder = false;
 		
+		
+		/** JUST FOR TESTING PURPOSES*/
+		if(controller.extendLadder()){
+			ladderT.set(SmartDashboard.getNumber("ELS", 0));
+		} else if(controller.retractLadder()){
+			ladderT.set(SmartDashboard.getNumber("DLS", 0));
+		}
+		
+		
+		//Tasks Canceling
 		if(controller.cancelTask()) {
 			currentTask.cancel();
 			currentTask = new MultiTask(new TeleopTask(this), null);
 		}
 		
+		
+		//Task running
 		if(currentTask.run()){
 			currentTask = new MultiTask(new TeleopTask(this), null);
 		}
 		
 		
-		
+		//Smart Dashboard
 		SmartDashboard.putString("Current Task", currentTask.toString());
 		SmartDashboard.putString("Gyro: ", "" + gyro.getAngle());
 		SmartDashboard.putString("Gyro Rate", "" + gyro.getRate());
 		SmartDashboard.putString("Encoders right", "" + rightEncoder.getDistance());
 		SmartDashboard.putString("Encoders left", ""+ leftEncoder.getDistance());
-		
 		SmartDashboard.putString("Front Left", "" + frontLeft.get());
 		SmartDashboard.putString("Front Right", "" + frontRight.get());
 		SmartDashboard.putString("Rear Left", "" + rearLeft.get());
 		SmartDashboard.putString("Rear Right", "" + rearRight.get());
+		
+		SmartDashboard.putString("Ladder Encoder", "" + ladderEncoder.getDistance());
+		SmartDashboard.putString("Ladder Encoder Rate", "" + er.pidGet());
+		
 	}
 	
 	
@@ -188,5 +217,32 @@ public class Robot extends IterativeRobot {
 	
 	public ADXRS450_Gyro getGyro(){
 		return gyro;
+	}
+	
+	
+	
+	
+	
+	
+	//=================================INNER CLASSES============================//
+	
+	//just for testing purposes.
+	public class EncoderRate{
+		double lastEncoderReading;
+		long lastRecordedTime ;
+		
+		public EncoderRate(){
+			lastEncoderReading = ladderEncoder.getDistance();
+			lastRecordedTime = System.nanoTime() / 1000;
+		}
+		
+		public double pidGet() {
+			double value = (ladderEncoder.getDistance() - lastEncoderReading) / ((double)(System.nanoTime() / 1000 - lastRecordedTime) / 1000);	// inches/millisecond
+			lastEncoderReading = ladderEncoder.getDistance();
+			lastRecordedTime = System.nanoTime() / 1000;
+			
+			return value;
+		}
+		
 	}
 }
