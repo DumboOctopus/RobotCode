@@ -21,13 +21,16 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  *		
  */
 public class Ladder {
+	private static final int[] positions = {0, 1, 2, 3};		// TODO: set these
+	private static final double P = 1, I = 1, D = 1;
+	private static final double idealEncoderRate = 1;
+	
 	public boolean movingLadder = false; //constantly set to false inside Telop Periodic
 	
 	private Talon ladder, coiler, claw;
 	private Encoder encoder;
 	private PIDController pid;
-	private static final double P = 1, I = 1, D = 1;
-	private static final double idealEncoderRate = 1;
+	private int pos = 0;
 	
 	
 	public Ladder(Talon ladder, Talon coiler, Talon claw, Encoder encoder) {
@@ -37,6 +40,24 @@ public class Ladder {
 		
 		this.pid = new PIDController(P, I, D, new EncoderRatePIDSource(), new MoveLadderPIDOutput());
 		throw new ArithmeticException("Set P, I, D, idealEncoder Rate consts!!");
+	}
+	
+	public int getPos() {
+		return pos;
+	}
+	
+	public boolean setPos(int pos) {
+		if(pos >= positions.length || pos < 0) return true;		// terminate if an invalid pos is passed in
+		if(!close(encoder.getDistance(), positions[pos])) {
+			if(pos > this.pos)
+				extendLadder();
+			else if(pos < this.pos)
+				retractLadder();
+			return false;
+		} else {
+			this.pos = pos;
+			return true;
+		}
 	}
 	
 	public void disablePID() {
@@ -71,6 +92,10 @@ public class Ladder {
 	
 	public void closeClaw() {
 		claw.set(0);
+	}
+	
+	public Encoder getEncoder() {
+		return encoder;
 	}
 	
 	static boolean close(double a, double b) {

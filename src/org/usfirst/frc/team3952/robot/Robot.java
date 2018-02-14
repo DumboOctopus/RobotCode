@@ -219,10 +219,9 @@ public class Robot extends IterativeRobot {
 		return gyro;
 	}
 	
-	
-	
-	
-	
+	public Ladder getLadder() {
+		return ladder;
+	}
 	
 	//=================================INNER CLASSES============================//
 	
