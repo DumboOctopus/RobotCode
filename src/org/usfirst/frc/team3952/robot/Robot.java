@@ -27,6 +27,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * 	See Ladder
  * 	Clean up Garbage in Robot.
  * 
+ * Tasks:
+ * 	-Ladder Code Test
+ * 	-Claw Code
+ * 	-Driving focus
+ * 		- Ask Drivers if they want manuall control ladder? or nah
+ * 
+ * 	-Autonomous later.
+ * 	
  * 
  */
 public class Robot extends IterativeRobot {
@@ -58,8 +66,7 @@ public class Robot extends IterativeRobot {
 		frontRight = new Talon(0);
 		rearLeft = new Talon(3);
 		rearRight = new Talon(2);
-		frontRight.setInverted(true);
-		rearRight.setInverted(true);
+
 		ladderT = new Talon(6);		
 		coiler = new Talon(5);    
 		claw = new Talon(4);
@@ -80,6 +87,10 @@ public class Robot extends IterativeRobot {
 		ladderEncoder = new Encoder(4, 5, false, Encoder.EncodingType.k2X);
 		ladderEncoder.setDistancePerPulse(1); //WE ARE NOT GOING TO CALIBRATE KEKEKEK.
 		
+		topLimit = new DigitalInput(9);
+		frameBottomLimit = new DigitalInput(8);
+		armBottomLimit = new DigitalInput(7);
+		
 		ladder = new Ladder(ladderT, coiler, claw, ladderEncoder, topLimit, frameBottomLimit, armBottomLimit);
 		
 		gyro = new ADXRS450_Gyro();
@@ -93,8 +104,6 @@ public class Robot extends IterativeRobot {
 		autonomousChooser.addObject("Starting Left", "L");
 		autonomousChooser.addObject("Starting Middle", "M");
 		autonomousChooser.addDefault("Starting Right", "R");
-		
-		er = new EncoderRate();
 		SmartDashboard.putData("Autonomous Initial Position", autonomousChooser);
 	}
 	
@@ -112,7 +121,7 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void teleopPeriodic() {
-		
+		SmartDashboard.putString("topLimit", ""+topLimit.get());
 		if(controller.extendLadder()){
 			ladder.extendLadder();
 		} else if(controller.retractLadder()){
@@ -120,6 +129,22 @@ public class Robot extends IterativeRobot {
 		} else{
 			ladder.pulseIfNotMoving(); //so if we don't want it move, it won't
 		}
+		
+		if(controller.pressedExtendLadder()){
+			if(currentTask instanceof MultiTask){
+				((MultiTask) currentTask).cancelSecondaryTask();
+				((MultiTask) currentTask).setSecondaryTask(new MoveLadderTask(this, 1));
+			}
+		} else if(controller.pressedRetractLadder()){
+			if(currentTask instanceof MultiTask){
+				((MultiTask) currentTask).cancelSecondaryTask();
+				((MultiTask) currentTask).setSecondaryTask(new MoveLadderTask(this, -1));
+			}
+		}
+		
+		
+		//ladder saftey
+		ladder.safety();
 		
 		//Tasks Canceling
 		if(controller.cancelTask()) {
@@ -223,25 +248,4 @@ public class Robot extends IterativeRobot {
 		return ladder;
 	}
 	
-	//=================================INNER CLASSES============================//
-	
-	//just for testing purposes.
-	public class EncoderRate{
-		double lastEncoderReading;
-		long lastRecordedTime ;
-		
-		public EncoderRate(){
-			lastEncoderReading = ladderEncoder.getDistance();
-			lastRecordedTime = System.nanoTime() / 1000;
-		}
-		
-		public double pidGet() {
-			double value = (ladderEncoder.getDistance() - lastEncoderReading) / ((double)(System.nanoTime() / 1000 - lastRecordedTime) / 1000);	// inches/millisecond
-			lastEncoderReading = ladderEncoder.getDistance();
-			lastRecordedTime = System.nanoTime() / 1000;
-			
-			return value;
-		}
-		
-	}
 }

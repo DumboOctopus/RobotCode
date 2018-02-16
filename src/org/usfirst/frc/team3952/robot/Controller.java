@@ -73,6 +73,7 @@ public class Controller {
 	public double getRotation() {
 		//if(SMOOTH) return (rotation = constraint(lerp(rotation, 0.5 * joystick.getZ())));
 		//else return (rotation = 0.5 * joystick.getZ());
+		//return 0;
 		return 0.3 * joystick.getZ(); //nerf the rotating
 //		if(joystick.getRawButton(5)){
 //			return 0.25;
@@ -89,6 +90,14 @@ public class Controller {
 	
 	public boolean retractLadder() {
 		return joystick.getRawButton(RETRACT_LADDER);
+	}
+	
+	public boolean pressedExtendLadder(){
+		return joystick.getRawButtonPressed(EXTEND_LADDER);
+	}
+	
+	public boolean pressedRetractLadder(){
+		return joystick.getRawButtonPressed(RETRACT_LADDER);
 	}
 	
 	public boolean cancelTask() {
