@@ -4,86 +4,48 @@ import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // Encoders using no units
 /**
- * TODO:
- * 		Ask zenal if coiler needs ratchet.
- * 		Make coiler go up when need be (aka when stage 2 moves up)
- * 		Calibrate encoders????? 
- * 			Even if we calibrate them, its not going to 100 % accurate bc the inches/rot 
- * 			changes as inches increses.
- * 			For now: NOT CALIBRATE
- *		ALSO, we have programmatic access to the limit switch.
- * 		How To figure out constants??
- * 			Step 1: figure out ideal encoder change rate.
- * 			Step 2: Simulate PIDController on our computers to figure out a general idea of constants
- * 			Step 3: Test and refine on actual. 
- * 				Step 3.1: Make sure it goes constant steady speed on constant mass phases
- * 				Step 3.2: Test it under transition phases (inc mass, dec mass).
- *		
+ * Notes:
+ * 	The climber cord will be handled by mech
+ * 	The motor has so much torque, it will go at the same speed regardless of weight change
+ * 
  */
 public class Ladder {
-	private static final int[] positions = {0, 1, 2, 3};		// TODO: set these
-	private static final double P = 1, I = 1, D = 1;
-	private static final double idealEncoderRate = 1;
-	
-	public boolean movingLadder = false; //constantly set to false inside Telop Periodic
 	
 	private Talon ladder, coiler, claw;
 	private Encoder encoder;
-	private PIDController pid;
-	private int pos = 0;
+	private DigitalInput topLimit, frameBottomLimit, armBottomLimit;
+	// Encoder values: 6ft = 4800
 	
 	
-	public Ladder(Talon ladder, Talon coiler, Talon claw, Encoder encoder) {
+	public Ladder(Talon ladder, Talon coiler, Talon claw, Encoder encoder, DigitalInput topLimit,
+			DigitalInput frameBottomLimit, DigitalInput armBottomLimit) {
+		super();
 		this.ladder = ladder;
 		this.coiler = coiler;
 		this.claw = claw;
-		
-		this.pid = new PIDController(P, I, D, new EncoderRatePIDSource(), new MoveLadderPIDOutput());
-		throw new ArithmeticException("Set P, I, D, idealEncoder Rate consts!!");
+		this.encoder = encoder;
+		this.topLimit = topLimit;
+		this.frameBottomLimit = frameBottomLimit;
+		this.armBottomLimit = armBottomLimit;
 	}
 	
-	public int getPos() {
-		return pos;
-	}
-	
-	public boolean setPos(int pos) {
-		if(pos >= positions.length || pos < 0) return true;		// terminate if an invalid pos is passed in
-		if(!close(encoder.getDistance(), positions[pos])) {
-			if(pos > this.pos)
-				extendLadder();
-			else if(pos < this.pos)
-				retractLadder();
-			return false;
-		} else {
-			this.pos = pos;
-			return true;
+
+	public void extendLadder() {
+		if(!topLimit.get()){
+			ladder.set(0.65);
 		}
 	}
-	
-	public void disablePID() {
-		pid.disable();
-	}
-	
-	public void extendLadder() { 
-		if(!pid.isEnabled()) { 
-			pid.enable();
-			pid.setSetpoint(idealEncoderRate);
-		} else if(!close(pid.getSetpoint(), idealEncoderRate)) {
-			pid.setSetpoint(idealEncoderRate);
-		}
-		movingLadder = true;
-		// use pid thing
-	}
-	
+
 	public void retractLadder() {
-		if(!pid.isEnabled()) {
-			pid.enable();
-			pid.setSetpoint(-idealEncoderRate);
-		} else if(!close(pid.getSetpoint(), -idealEncoderRate)) {
-			pid.setSetpoint(-idealEncoderRate);
+		if(!(frameBottomLimit.get() && armBottomLimit.get())){
+			ladder.set(-0.4);
 		}
-		movingLadder = true;
-		// use pid thing
+	}
+	
+	public void pulseIfNotMoving(){
+		int rand = (int) Math.random()*2; // [0,1) -> [0, 2) -> 0 or 1
+		//there is a 50% chance the ladder will be at 0.05 power, 50% chance it will be at 0.
+		ladder.set(0.08*rand); //so about half the time it should pulse on
 	}
 	
 	public void openClaw() {
@@ -102,33 +64,4 @@ public class Ladder {
 		return Math.abs(a - b) < 1;
 	}
 	
-	public class EncoderRatePIDSource implements PIDSource {
-		double lastEncoderReading = encoder.getDistance();
-		long lastRecordedTime = System.nanoTime() / 1000;
-		
-		@Override
-		public PIDSourceType getPIDSourceType() {
-			return PIDSourceType.kRate;
-		}
-		
-		@Override
-		public double pidGet() {
-			double value = (encoder.getDistance() - lastEncoderReading) / ((double)(System.nanoTime() / 1000 - lastRecordedTime) / 1000);	// inches/millisecond
-			lastEncoderReading = encoder.getDistance();
-			lastRecordedTime = System.nanoTime() / 1000;
-			
-			return value;
-		}
-		
-		@Override
-		public void setPIDSourceType(PIDSourceType pidSource) {}
-	}
-	
-	class MoveLadderPIDOutput implements PIDOutput {
-		@Override
-		public void pidWrite(double output) {
-			ladder.set(Math.min(0.5, output));		// limit speed to 0.5
-			SmartDashboard.putString("PID Ladder Output", (int)output + "." + (int)(output * 100) % 100);	// or just ("" + output).substring(0, 5 + ("" + output).indexOf("."))
-		}
-	}
 }

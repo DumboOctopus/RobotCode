@@ -8,10 +8,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
 /**
- * rear left 0
- * rear right 1
- * front right 2
- * front left 3
+ * rear left 		3	
+ * rear right 		2
+ * front right		0
+ * front left	 	1
+ * ladder 			6
+ * climber			4, 5
+ * 
+ * 
+ * TODO: 
+ * 	See Controller
+ * 	See Ladder
+ * 	Clean up Garbage in Robot.
+ * 
  * 
  * TODO: 
  * 	See Controller
@@ -25,10 +34,12 @@ public class Robot extends IterativeRobot {
 	private Controller controller;
 
 	private MecanumDrive drive;
-	private Task currentTask, backgroundTask;
+	private Ladder ladder;
+	
+	private Task currentTask;
 	private Encoder rightEncoder, leftEncoder, ladderEncoder;
 	private ADXRS450_Gyro gyro;
-	private Ladder ladder;
+	//private Ladder ladder;
 	
 	private Talon frontLeft, frontRight, rearLeft, rearRight;
 	private Talon ladderT, coiler, claw;
@@ -36,50 +47,48 @@ public class Robot extends IterativeRobot {
 	private Queue<Task> autonomousQueue;
 	private SendableChooser<String> autonomousChooser;
 	
+	private DigitalInput topLimit, frameBottomLimit, armBottomLimit;
 	
-	//Testing purposes
-	EncoderRate er;
 	
 	@Override
 	public void robotInit() {
 		controller = new Controller();
 		
-		// init Talons
-		frontLeft = new Talon(3);
-		rearLeft = new Talon(0);
-		frontRight = new Talon(2);
-		rearRight = new Talon(1);
+		frontLeft = new Talon(1);
+		frontRight = new Talon(0);
+		rearLeft = new Talon(3);
+		rearRight = new Talon(2);
 		frontRight.setInverted(true);
 		rearRight.setInverted(true);
-		
-		ladderT = new Talon(-1);		// set to reasonable value
-		coiler = new Talon(-1);
-		claw = new Talon(-1);
+		ladderT = new Talon(6);		
+		coiler = new Talon(5);    
+		claw = new Talon(4);
 		
 		//init drive train
 		drive = new MecanumDrive(frontLeft,
 								 rearLeft, 
 								 frontRight, 
 								 rearRight);
-								 
-		backgroundTask = new NullTask();
+							
+		//Init encoders
 		rightEncoder = new Encoder(2, 3, false, Encoder.EncodingType.k2X); //we can also try k4 for more accuracy.
 		rightEncoder.setDistancePerPulse(0.0078);
-		//rightEncoder.setDistancePerPulse(1.23 * 3/500.0);
-		//rightEncoder.setDistancePerPulse(1.26 * 0.011747);
-		//20 pulses per rotation
+				
 		leftEncoder = new Encoder(1, 0, false, Encoder.EncodingType.k2X);
 		leftEncoder.setDistancePerPulse(0.00677);
-		ladderEncoder.setDistancePerPulse(1); //WE ARE NOT GOING TO CALIBRATE KEKEKEK.
-		//leftEncoder.setDistancePerPulse(1.26 * 0.011747);//1.23 * 3/500.0);
 		
-		ladder = new Ladder(ladderT, coiler, claw, ladderEncoder);
+		ladderEncoder = new Encoder(4, 5, false, Encoder.EncodingType.k2X);
+		ladderEncoder.setDistancePerPulse(1); //WE ARE NOT GOING TO CALIBRATE KEKEKEK.
+		
+		ladder = new Ladder(ladderT, coiler, claw, ladderEncoder, topLimit, frameBottomLimit, armBottomLimit);
 		
 		gyro = new ADXRS450_Gyro();
 		autonomousQueue = new LinkedList<>();
 		currentTask = new TeleopTask(this);
 		//gyro.calibrate(); is this necessary? no
 		
+		
+		//smart dashboard selecting autonomous.
 		autonomousChooser = new SendableChooser<>();
 		autonomousChooser.addObject("Starting Left", "L");
 		autonomousChooser.addObject("Starting Middle", "M");
@@ -104,20 +113,13 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		
-		//ladder stuffs
-		if(!ladder.movingLadder) {
-			ladder.disablePID();
-		}
-		ladder.movingLadder = false;
-		
-		
-		/** JUST FOR TESTING PURPOSES*/
 		if(controller.extendLadder()){
-			ladderT.set(SmartDashboard.getNumber("ELS", 0));
+			ladder.extendLadder();
 		} else if(controller.retractLadder()){
-			ladderT.set(SmartDashboard.getNumber("DLS", 0));
+			ladder.retractLadder();
+		} else{
+			ladder.pulseIfNotMoving(); //so if we don't want it move, it won't
 		}
-		
 		
 		//Tasks Canceling
 		if(controller.cancelTask()) {
@@ -143,9 +145,7 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putString("Rear Left", "" + rearLeft.get());
 		SmartDashboard.putString("Rear Right", "" + rearRight.get());
 		
-		SmartDashboard.putString("Ladder Encoder", "" + ladderEncoder.getDistance());
-		SmartDashboard.putString("Ladder Encoder Rate", "" + er.pidGet());
-		
+		SmartDashboard.putString("Ladder Encoder", "" + ladderEncoder.getDistance());	
 	}
 	
 	

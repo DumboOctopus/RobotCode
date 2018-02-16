@@ -12,8 +12,8 @@ public class Controller {
 	public static final double DELTA = 0.02;
 	
 	public static final int COLLAPSE_ARM = 2;
-	public static final int EXTEND_LADDER = 3;
-	public static final int RETRACT_LADDER = 4;
+	public static final int EXTEND_LADDER = 4;
+	public static final int RETRACT_LADDER = 3;
 	public static final int CANCEL_TASK = 1;					// set to a reasonable value
 	public static final int CANCEL_BACKGROUND_TASK = 1;		// set to a reasonable value
 	
