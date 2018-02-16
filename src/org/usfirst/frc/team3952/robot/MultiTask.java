@@ -38,10 +38,13 @@ public class MultiTask extends Task {
 		// The Great One-Lining Magic
 		// return (t1 = (t1 != null && t1.run()) ? null : t1) == null && (t2 = (t2 != null && t2.run()) ? null : t2) == null;
 	}
+	
 
 	@Override
 	public void cancel() {
+		if(t1 != null)
 		t1.cancel();
+		if(t2 != null)
 		t2.cancel();
 	}
 
