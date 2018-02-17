@@ -1,6 +1,7 @@
 package org.usfirst.frc.team3952.robot;
 
 import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // Encoders using no units
 /**
@@ -52,6 +53,7 @@ public class Ladder {
 		// since armBottomLimit.get() and !armBottomLimit.get() cannot both be true
 		// thus by proof of contradiction, the assumption of (that armBottomLimit() but !frameBottomLimit.get()) == false
 		// thus when armBottomLimit.get(), !frameBottomLimit.get()
+		SmartDashboard.putString("Ladder Down: ", "" + !(frameBottomLimit.get() && armBottomLimit.get()));
 		if(!(frameBottomLimit.get() && armBottomLimit.get())){
 			ladder.set(-0.4);
 		} else {
@@ -109,7 +111,7 @@ public class Ladder {
 		}
 		
 		if(newPos == 3){ // go up
-			if(topLimit.get()){ // now we at the top
+			if(topLimit.get()){ // now we at the top 
 				pos = 3;
 				pulseIfNotMoving();
 				return true;
@@ -122,9 +124,9 @@ public class Ladder {
 		return true;
 	}
 	 
-	// TODO: testing required, has to go counter-clockwise
+	// TODO: testing required, has to go clockwise
 	public void coil() {
-		coiler.set(0.2);
+		coiler.set(-0.4);
 	}
 	
 	// TODO: testing required
@@ -154,7 +156,7 @@ public class Ladder {
 			ladder.set(0);
 		}
 		
-		coiler.set(0);
+		//coiler.set(0);
 	}
 	
 	public void pulseIfNotMoving(){

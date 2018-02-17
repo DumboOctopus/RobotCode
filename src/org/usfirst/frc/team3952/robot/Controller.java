@@ -1,6 +1,7 @@
 package org.usfirst.frc.team3952.robot;
 
 import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // joystick.getRawButton(2): while true arm collapse
 // joystick.getRawButton(3): move up ladder
@@ -10,8 +11,8 @@ public class Controller {
 	//=== Buttons ===\\
 	// TODO: decide these
 	public static final int CANCEL_TASK = 1;
-	public static final int EXTEND_LADDER = 4;
-	public static final int RETRACT_LADDER = 3;
+	public static final int EXTEND_LADDER = 3;
+	public static final int RETRACT_LADDER = 4;
 	public static final int LADDER_UP = 6;
 	public static final int LADDER_DOWN = 8;
 	public static final int CLOSE_CLAW = 2;

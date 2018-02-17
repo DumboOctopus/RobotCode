@@ -54,7 +54,7 @@ public class MultiTask extends Task {
 
 	@Override
 	public String toString() {
-		return "MultiTask: [" + t1.toString() + "], [" + t2.toString() + "]";
+		return "MultiTask: [" + t1 == null ? "null" : t1.toString() + "], [" + t2 == null ? "null" : t2.toString() + "]";
 	}
 
 }

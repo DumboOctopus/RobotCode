@@ -84,7 +84,7 @@ public class Robot extends IterativeRobot {
 		ladderEncoder = new Encoder(4, 5, false, Encoder.EncodingType.k2X);
 		ladderEncoder.setDistancePerPulse(1);	// We are not going to calibrate
 		
-		topLimit = new DigitalInput(9);
+		topLimit = new DigitalInput(6);
 		frameBottomLimit = new DigitalInput(7);
 		armBottomLimit = new DigitalInput(8);
 		clawSwitch = new DigitalInput(10);
@@ -97,7 +97,7 @@ public class Robot extends IterativeRobot {
 		//=== Task System Initialization===\\
 		
 		autonomousQueue = new LinkedList<>();
-		currentTask = new TeleopTask(this);
+		currentTask = new MultiTask(new TeleopTask(this), null);
 //		gyro.calibrate(); // Not necessary
 		
 		// SmartDashboard selecting autonomous
@@ -121,6 +121,8 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void teleopPeriodic() {
+		SmartDashboard.putString("Controller Extend Ladder: ", "" + controller.extendLadder());
+		SmartDashboard.putString("Controller Retract Ladder: ", "" + controller.retractLadder());
 		if(controller.extendLadder()){
 			ladder.extendLadder();
 		} else if(controller.retractLadder()){
@@ -134,16 +136,22 @@ public class Robot extends IterativeRobot {
 			if(currentTask instanceof MultiTask){
 				((MultiTask) currentTask).cancelSecondaryTask();
 				((MultiTask) currentTask).setSecondaryTask(new MoveLadderTask(this, 1));
+			} else {			
+				currentTask = new MultiTask(new TeleopTask(this), new MoveLadderTask(this, 1));
 			}
 		} else if(controller.ladderDown()) {
 			if(currentTask instanceof MultiTask){
 				((MultiTask) currentTask).cancelSecondaryTask();
 				((MultiTask) currentTask).setSecondaryTask(new MoveLadderTask(this, -1));
+			} else {			
+				currentTask = new MultiTask(new TeleopTask(this), new MoveLadderTask(this, -1));
 			}
 		}
 		
 		if(controller.coil()) {
-			ladder.coil();
+			coiler.set(0.2);
+		} else {
+			coiler.set(0);
 		}
 		
 		// TODO: Not using this because it is probably going to be buggy and problematic with the available testing time
@@ -189,6 +197,8 @@ public class Robot extends IterativeRobot {
 //		SmartDashboard.putString("Gyro Rate: ", "" + gyro.getRate());
 		
 		SmartDashboard.putString("Top Limit: ", "" + topLimit.get());
+		SmartDashboard.putString("Frame Bottom Limit: ", "" + frameBottomLimit.get());
+		SmartDashboard.putString("Arm Bottom Limit: ", "" + armBottomLimit.get());
 		SmartDashboard.putString("Ladder Encoder: ", "" + ladderEncoder.getDistance());	
 	}
 	
@@ -206,6 +216,8 @@ public class Robot extends IterativeRobot {
 		String ourPosition = autonomousChooser.getSelected(); // L, R, M
 		
 		// Adapt Chris's code
+		autonomousQueue.add(new MoveForwardTask(this, 8.5));	// Move forward 7 in = 7ft to move pass the line
+																// 8.5 because of calibration
 	}
 	
 	@Override
