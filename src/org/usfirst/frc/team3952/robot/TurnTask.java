@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
 /**
- * Status: Tested and working good enough but is a bit impercise.
+ * Status: Tested and working good enough but is a bit not precise
  */
 public class TurnTask extends Task {
 	
@@ -14,14 +14,12 @@ public class TurnTask extends Task {
 	private double degrees;
 	private boolean flag;		// set starting angle on first frame
 
-	//next thing: using System.millis() to do local linearization like a boss
-	private long lastMillis;
-	
+	private long lastMillis;	// use System.millis() to do local linearization	
 	
 	/**
 	 * Constructs a Turn Task task to turn degrees degrees
 	 * @param robot the robot
-	 * @param degrees negative = left, + = right
+	 * @param degrees negative = left, positive = right
 	 */
 	public TurnTask(Robot robot, double degrees){
 		drive = robot.getDrive();
@@ -31,32 +29,28 @@ public class TurnTask extends Task {
 	}
 	
 	public boolean run(){
-		
-		//initialization stuffs
+		// Initialization
 		if(flag) {
 			flag = false;
 			startingAngle = gyro.getAngle() % 360;
 			lastMillis = System.currentTimeMillis();
 		}
 		
-		
 		long nowMillis = System.currentTimeMillis();
-		//check if we are done
-		if(differenceAngle(gyro.getAngle() + gyro.getRate() * (nowMillis - lastMillis)/1000.0, startingAngle + degrees) < 1.0){
+		// check if we are done
+		if(differenceAngle(gyro.getAngle() + gyro.getRate() * (nowMillis - lastMillis) / 1000.0, startingAngle + degrees) < 1.0){
 			drive.driveCartesian(0, 0, 0);
-			lastMillis = nowMillis; //just in case it doesn't stop so nowMillis - lastMillis doesn't become so huge, condition is false
-			return true; //should stop after this
-			
+			return true;
 		}
 		
-		//move
+		// move
 		if(degrees < 0){
 			drive.driveCartesian(0, 0, -0.25);
 		} else if (degrees > 0){
 			drive.driveCartesian(0, 0, 0.25);
 		} 
 		
-		//make sure to change last millis
+		// make sure to change last millis
 		lastMillis = nowMillis;
 		return false;
 	}
@@ -69,8 +63,7 @@ public class TurnTask extends Task {
 		return "TurnTask";
 	}
 	
-	
-	private double differenceAngle(double a1, double a2){
+	private static double differenceAngle(double a1, double a2){
 		return Math.abs(a1 % 360 - a2 % 360);
 	}
 }

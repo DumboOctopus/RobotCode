@@ -1,13 +1,13 @@
 package org.usfirst.frc.team3952.robot;
 
-public class GraduallyGoTO {
-	
+// TODO: used?
+public class GraduallyGoTo {
 	private double value;
 	private double changePerMillis;
 	
 	private long lastMillis;
 	
-	public GraduallyGoTO(double value, double changePerMillis) {
+	public GraduallyGoTo(double value, double changePerMillis) {
 		this.value = value;
 		this.changePerMillis = changePerMillis;
 		lastMillis = System.currentTimeMillis();
@@ -27,7 +27,4 @@ public class GraduallyGoTO {
 		lastMillis = nextMillis;
 		return value;
 	}
-	
-	
-
 }

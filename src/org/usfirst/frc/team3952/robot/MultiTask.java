@@ -31,26 +31,30 @@ public class MultiTask extends Task {
 	
 	@Override
 	public boolean run() {
-		if(t1 != null && t1.run()) t1 = null;
-		if(t2 != null && t2.run()) t2 = null;
+		if(t1 != null && t1.run()) {
+			t1.cancel();
+			t1 = null;
+		}
+		if(t2 != null && t2.run()) {
+			t2.cancel();
+			t2 = null;
+		}
 		
 		return t1 == null && t2 == null;
-		// The Great One-Lining Magic
-		// return (t1 = (t1 != null && t1.run()) ? null : t1) == null && (t2 = (t2 != null && t2.run()) ? null : t2) == null;
 	}
 	
 
 	@Override
 	public void cancel() {
 		if(t1 != null)
-		t1.cancel();
+			t1.cancel();
 		if(t2 != null)
-		t2.cancel();
+			t2.cancel();
 	}
 
 	@Override
 	public String toString() {
-		return "MultiTask: " + t1 + ", " + t2;
+		return "MultiTask: [" + t1.toString() + "], [" + t2.toString() + "]";
 	}
 
 }

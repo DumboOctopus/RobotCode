@@ -16,14 +16,15 @@ public class MoveForwardTask extends Task {
 	private double distance;
 	
 	private boolean started = false;
-	//private GraduallyGoTO ggt;
+	//private GraduallyGoTo ggt;
 	
 	public MoveForwardTask(Robot robot, double distance) {
 		drive = robot.getDrive();
 		leftEncoder = robot.getLeftEncoder();
 		rightEncoder = robot.getRightEncoder();
 		this.distance = distance;
-		//ggt = new GraduallyGoTO(0, 0.009); 
+		
+		//ggt = new GraduallyGoTo(0, 0.009); 
 		/**
 		 * Observations:
 		 * 	low speed, low acceleration: not much drift
@@ -39,10 +40,11 @@ public class MoveForwardTask extends Task {
 		//ggt = new GraduallyGoTO(0.32, 0.005); // ok
 	}
 	
+	// TODO: testing required
 	@Override
 	public boolean run() {
 		if(!started){
-			//just cause the left encoder is so much more accurate than right.
+			// just because the left encoder is so much more accurate than right.
 			initialDistance = leftEncoder.getDistance();
 			started = true;
 		}
@@ -58,17 +60,14 @@ public class MoveForwardTask extends Task {
 	
 	}
 	
-	
-	
-	
 	@Override
 	public void cancel() {
-		drive.driveCartesian(0, 0, 0);		// needed? needed
+		drive.driveCartesian(0, 0, 0);
 	}
 	
 	@Override
 	public String toString() {
 		double currentDistance = leftEncoder.getDistance();
-		return "Move Forward: " + (int)distance + " feet(" + (int) (currentDistance - initialDistance) + " feet left)";
+		return "Move Forward: " + (int)distance + " feet(" + (int)(currentDistance - initialDistance) + " feet left)";
 	}
 }

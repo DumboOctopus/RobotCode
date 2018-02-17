@@ -3,7 +3,7 @@ package org.usfirst.frc.team3952.robot;
 public class MoveLadderTask extends Task {
 	
 	private Ladder ladder;
-	private int pos;	// direction, destination position
+	private int pos;	// destination position
 	
 	public MoveLadderTask(Robot robot, int dir) {
 		ladder = robot.getLadder();
@@ -20,7 +20,7 @@ public class MoveLadderTask extends Task {
 
 	@Override
 	public String toString() {
-		return "Move Ladder To Position Task(" + (pos+1) + ")";
+		return "Move Ladder To Position Task(Position " + (pos + 1) + ")";
 	}
 
 }

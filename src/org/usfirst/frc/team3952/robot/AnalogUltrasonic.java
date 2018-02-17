@@ -2,6 +2,8 @@ package org.usfirst.frc.team3952.robot;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+//=== Not Used ===\\
+
 public class AnalogUltrasonic {
 	private AnalogInput sensor; //the actual sensor
 	private CircularQueue cq; //stores past 10 values.

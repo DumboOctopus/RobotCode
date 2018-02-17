@@ -15,18 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * ladder 			6
  * climber			4, 5
  * 
- * 
- * TODO: 
- * 	See Controller
- * 	See Ladder
- * 	Clean up Garbage in Robot.
- * 
- * 
- * TODO: 
- * 	See Controller
- * 	See Ladder
- * 	Clean up Garbage in Robot.
- * 
  * Tasks:
  * 	-Ladder Code Test
  * 	-Claw Code
@@ -38,68 +26,81 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * 
  */
 public class Robot extends IterativeRobot {
+	//=== Drive ===\\
 	
 	private Controller controller;
-
+	private Talon frontLeft, frontRight, rearLeft, rearRight;
+	private Encoder rightEncoder, leftEncoder;
+	private ADXRS450_Gyro gyro;
 	private MecanumDrive drive;
+	
+	//=== Ladder, Claw, & Winch ===\\
+	
+	private Talon ladderT, coiler, claw;
+	private Encoder ladderEncoder;
+	private DigitalInput topLimit, frameBottomLimit, armBottomLimit, clawSwitch;
 	private Ladder ladder;
+	private Servo servo;
+	private boolean dropClaw;
+	
+	//=== Task System ===\\
 	
 	private Task currentTask;
-	private Encoder rightEncoder, leftEncoder, ladderEncoder;
-	private ADXRS450_Gyro gyro;
-	//private Ladder ladder;
-	
-	private Talon frontLeft, frontRight, rearLeft, rearRight;
-	private Talon ladderT, coiler, claw;
-	
 	private Queue<Task> autonomousQueue;
 	private SendableChooser<String> autonomousChooser;
 	
-	private DigitalInput topLimit, frameBottomLimit, armBottomLimit;
-	
-	
 	@Override
 	public void robotInit() {
+		//=== Drive Initialization ===\\
+		
 		controller = new Controller();
 		
 		frontLeft = new Talon(1);
 		frontRight = new Talon(0);
 		rearLeft = new Talon(3);
-		rearRight = new Talon(2);
-
-		ladderT = new Talon(6);		
-		coiler = new Talon(5);    
-		claw = new Talon(4);
+		rearRight = new Talon(2);			
 		
-		//init drive train
+		// Initialize Encoders
+		rightEncoder = new Encoder(2, 3, false, Encoder.EncodingType.k2X); // We can also try k4 for more accuracy.
+		rightEncoder.setDistancePerPulse(0.0078);		
+		leftEncoder = new Encoder(1, 0, false, Encoder.EncodingType.k2X);
+		leftEncoder.setDistancePerPulse(0.00677);
+		
+		gyro = new ADXRS450_Gyro();
+		
+		// Initialize Drive Train
+		
 		drive = new MecanumDrive(frontLeft,
 								 rearLeft, 
 								 frontRight, 
 								 rearRight);
-							
-		//Init encoders
-		rightEncoder = new Encoder(2, 3, false, Encoder.EncodingType.k2X); //we can also try k4 for more accuracy.
-		rightEncoder.setDistancePerPulse(0.0078);
-				
-		leftEncoder = new Encoder(1, 0, false, Encoder.EncodingType.k2X);
-		leftEncoder.setDistancePerPulse(0.00677);
+		
+		//=== Ladder, Claw, & Winch Initialization ===\\
+		
+		ladderT = new Talon(6);		
+		coiler = new Talon(4);    
+		claw = new Talon(9);
 		
 		ladderEncoder = new Encoder(4, 5, false, Encoder.EncodingType.k2X);
-		ladderEncoder.setDistancePerPulse(1); //WE ARE NOT GOING TO CALIBRATE KEKEKEK.
+		ladderEncoder.setDistancePerPulse(1);	// We are not going to calibrate
 		
 		topLimit = new DigitalInput(9);
-		frameBottomLimit = new DigitalInput(8);
-		armBottomLimit = new DigitalInput(7);
+		frameBottomLimit = new DigitalInput(7);
+		armBottomLimit = new DigitalInput(8);
+		clawSwitch = new DigitalInput(10);
 		
-		ladder = new Ladder(ladderT, coiler, claw, ladderEncoder, topLimit, frameBottomLimit, armBottomLimit);
+		ladder = new Ladder(ladderT, coiler, claw, ladderEncoder, topLimit, frameBottomLimit, armBottomLimit, clawSwitch);
 		
-		gyro = new ADXRS450_Gyro();
+		servo = new Servo(8);
+		dropClaw = true;
+		
+		//=== Task System Initialization===\\
+		
 		autonomousQueue = new LinkedList<>();
 		currentTask = new TeleopTask(this);
-		//gyro.calibrate(); is this necessary? no
+//		gyro.calibrate(); // Not necessary
 		
-		
-		//smart dashboard selecting autonomous.
+		// SmartDashboard selecting autonomous
 		autonomousChooser = new SendableChooser<>();
 		autonomousChooser.addObject("Starting Left", "L");
 		autonomousChooser.addObject("Starting Middle", "M");
@@ -108,121 +109,136 @@ public class Robot extends IterativeRobot {
 	}
 	
 	
-	//=====================================DISABLED=================================//
+	//=== Disabled ===\\
 	
 	@Override
 	public void disabledInit() {}
 
-	//=================================TELOP=====================================///
+	//=== Teleop ===\\
 
 	@Override
-	public void teleopInit() {
-	}
+	public void teleopInit() {}
 	
 	@Override
 	public void teleopPeriodic() {
-		SmartDashboard.putString("topLimit", ""+topLimit.get());
 		if(controller.extendLadder()){
 			ladder.extendLadder();
 		} else if(controller.retractLadder()){
 			ladder.retractLadder();
-		} else{
-			ladder.pulseIfNotMoving(); //so if we don't want it move, it won't
+		} else {
+			//ladder.pulseIfNotMoving(); // So if we don't want it move, it won't
+			ladderT.set(0);	// TODO: should be fine for now
 		}
 		
-		if(controller.pressedExtendLadder()){
+		if(controller.ladderUp()) {
 			if(currentTask instanceof MultiTask){
 				((MultiTask) currentTask).cancelSecondaryTask();
 				((MultiTask) currentTask).setSecondaryTask(new MoveLadderTask(this, 1));
 			}
-		} else if(controller.pressedRetractLadder()){
+		} else if(controller.ladderDown()) {
 			if(currentTask instanceof MultiTask){
 				((MultiTask) currentTask).cancelSecondaryTask();
 				((MultiTask) currentTask).setSecondaryTask(new MoveLadderTask(this, -1));
 			}
 		}
 		
+		if(controller.coil()) {
+			ladder.coil();
+		}
 		
-		//ladder saftey
+		// TODO: Not using this because it is probably going to be buggy and problematic with the available testing time
+//		if(controller.pressedExtendLadder()){
+//			if(currentTask instanceof MultiTask){
+//				((MultiTask) currentTask).cancelSecondaryTask();
+//				((MultiTask) currentTask).setSecondaryTask(new MoveLadderTask(this, 1));
+//			}
+//		} else if(controller.pressedRetractLadder()){
+//			if(currentTask instanceof MultiTask){
+//				((MultiTask) currentTask).cancelSecondaryTask();
+//				((MultiTask) currentTask).setSecondaryTask(new MoveLadderTask(this, -1));
+//			}
+//		}
+		
+		// Ladder safety
 		ladder.safety();
 		
-		//Tasks Canceling
+		// Task Canceling
 		if(controller.cancelTask()) {
 			currentTask.cancel();
 			currentTask = new MultiTask(new TeleopTask(this), null);
 		}
 		
-		
-		//Task running
+		// Task running
 		if(currentTask.run()){
 			currentTask = new MultiTask(new TeleopTask(this), null);
 		}
 		
+		// SmartDashboard
+		SmartDashboard.putString("Current Task: ", currentTask.toString());
 		
-		//Smart Dashboard
-		SmartDashboard.putString("Current Task", currentTask.toString());
+		// Realistic not needed for now
+//		SmartDashboard.putString("Front Left: ", "" + frontLeft.get());
+//		SmartDashboard.putString("Front Right: ", "" + frontRight.get());
+//		SmartDashboard.putString("Rear Left: ", "" + rearLeft.get());
+//		SmartDashboard.putString("Rear Right: ", "" + rearRight.get());
+
+		SmartDashboard.putString("Left Encoder: ", "" + leftEncoder.getDistance());
+		SmartDashboard.putString("Right Encoder: ", "" + rightEncoder.getDistance());
+		
 		SmartDashboard.putString("Gyro: ", "" + gyro.getAngle());
-		SmartDashboard.putString("Gyro Rate", "" + gyro.getRate());
-		SmartDashboard.putString("Encoders right", "" + rightEncoder.getDistance());
-		SmartDashboard.putString("Encoders left", ""+ leftEncoder.getDistance());
-		SmartDashboard.putString("Front Left", "" + frontLeft.get());
-		SmartDashboard.putString("Front Right", "" + frontRight.get());
-		SmartDashboard.putString("Rear Left", "" + rearLeft.get());
-		SmartDashboard.putString("Rear Right", "" + rearRight.get());
+//		SmartDashboard.putString("Gyro Rate: ", "" + gyro.getRate());
 		
-		SmartDashboard.putString("Ladder Encoder", "" + ladderEncoder.getDistance());	
+		SmartDashboard.putString("Top Limit: ", "" + topLimit.get());
+		SmartDashboard.putString("Ladder Encoder: ", "" + ladderEncoder.getDistance());	
 	}
 	
 	
-	//=====================================AUTONOMOUS======================================//
+	//==== Autonomous ===//
 	
 	/**
 	 * This will run every time you press enable in auto
 	 */
 	@Override
 	public void autonomousInit(){
-		String stuff = DriverStation.getInstance().getGameSpecificMessage(); //ex: LRL
+		String stuff = DriverStation.getInstance().getGameSpecificMessage(); // e.g. LRL
 		String ourSwitchPos = stuff.substring(0, 1);
 		String scalePos = stuff.substring(1, 2);
-		String ourPosition = autonomousChooser.getSelected(); //L, R, M
+		String ourPosition = autonomousChooser.getSelected(); // L, R, M
 		
-		
-		//need to adapt chris's code
-		//setting up queue
-		autonomousQueue.add(new MoveForwardTask(this, 2));
-		//autonomousQueue.add(new TurnTask(this, 90));
-		//autonomousQueue.add(new TurnTask(this, -90));
-		//autonomousQueue.add(new TurnTask(this, 360));
-		//autonomousQueue.add(
-		//      new MultiTask(new TurnTask(this, 90), new LadderUpTask(this, 4)
-		//);
-		//autonomousQueue.add(new TurnTask(this, 90));
-		
+		// Adapt Chris's code
 	}
 	
 	@Override
 	public void autonomousPeriodic(){
-		SmartDashboard.putString("Autonomous Queue", autonomousQueue.toString());
+		// Immediately after the game starts, drop down the claw(can this be put in autonomousInit()?)
+		if(dropClaw) {
+			servo.setAngle(90);	// TODO: still requires testing
+			dropClaw = false;
+		}
+		
+		SmartDashboard.putString("Autonomous Queue: ", autonomousQueue.toString());
 		if(!autonomousQueue.isEmpty()){
 			if(autonomousQueue.peek().run()){
 				autonomousQueue.poll();
 			}
-			SmartDashboard.putString("Current Task", currentTask.toString());
+			
+			SmartDashboard.putString("Current Task: ", currentTask.toString());
+
+			SmartDashboard.putString("Right Encoder: ", "" + rightEncoder.getDistance());
+			SmartDashboard.putString("Left Encoder: ", "" + leftEncoder.getDistance());
 			SmartDashboard.putString("Gyro: ", "" + gyro.getAngle());
-			SmartDashboard.putString("Encoders right", "" + rightEncoder.getDistance());
-			SmartDashboard.putString("Encoders left", "" + leftEncoder.getDistance());
+			
 		}
-		
 	}
 	
-	//==============================TEST=============================//
+	//=== Test ===\\
+	
 	@Override
 	public void testPeriodic(){
 		teleopPeriodic();
 	}
 	
-	
-	//=============================GETTERS=============================//
+	//=== Getters ===\\
 	
 	public Controller getController() {
 		return controller;
@@ -232,12 +248,12 @@ public class Robot extends IterativeRobot {
 		return drive;
 	}
 	
-	public Encoder getRightEncoder(){
-		return rightEncoder;
-	}
-	
 	public Encoder getLeftEncoder(){
 		return leftEncoder;
+	}
+	
+	public Encoder getRightEncoder(){
+		return rightEncoder;
 	}
 	
 	public ADXRS450_Gyro getGyro(){
@@ -247,5 +263,4 @@ public class Robot extends IterativeRobot {
 	public Ladder getLadder() {
 		return ladder;
 	}
-	
 }
