@@ -10,12 +10,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Controller {
 	//=== Buttons ===\\
 	// TODO: decide these
-	public static final int CANCEL_TASK = 1;
 	public static final int EXTEND_LADDER = 3;
 	public static final int RETRACT_LADDER = 4;
 	public static final int LADDER_UP = 6;
 	public static final int LADDER_DOWN = 8;
-	public static final int TRIGGER_CLAW = 1;
+	public static final int OPEN_CLAW = 1;
+	public static final int CLOSE_CLAW = 2;
 	public static final int COIL = 7, COIL2 = 8;
 	
 	private Joystick joystick;
@@ -79,16 +79,12 @@ public class Controller {
 		return joystick.getRawButton(COIL) && joystick.getRawButton(COIL2);
 	}
 	
-	public boolean triggerClaw() {
-		return joystick.getRawButtonReleased(TRIGGER_CLAW);
-	}
-	
 	public boolean openClaw() {
-		return joystick.getRawButton(1);
+		return joystick.getRawButtonReleased(OPEN_CLAW);
 	}
 	
 	public boolean closeClaw() {
-		return joystick.getRawButton(2);
+		return joystick.getRawButton(CLOSE_CLAW);
 		
 	}
 	

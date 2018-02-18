@@ -134,7 +134,7 @@ public class Ladder {
 	// TODO: testing required
 	public void closeClaw() {
 		//System.out.println("We made it to closeCLaw");
-		if(clawClosingLimit.get() && System.currentTimeMillis() - Robot.startMillis <= 380) {
+		if(clawClosingLimit.get()) {
 			claw.set(CLOCKWISE);
 			//System.out.println("claw.set(1)");
 		}else {

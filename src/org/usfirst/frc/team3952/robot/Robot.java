@@ -99,10 +99,7 @@ public class Robot extends IterativeRobot {
 		
 		servo = new Servo(8);
 		dropClaw = true;
-		
-		
-		
-		
+		openClaw = true;
 		
 		//=== Task System Initialization===\\
 		
@@ -116,12 +113,6 @@ public class Robot extends IterativeRobot {
 		autonomousChooser.addObject("Starting Middle", "M");
 		autonomousChooser.addDefault("Starting Right", "R");
 		SmartDashboard.putData("Autonomous Initial Position", autonomousChooser);
-		
-		openClaw = true;
-		
-		startMillis = System.currentTimeMillis();
-		shouldStop = false;
-
 	}
 	
 	
@@ -135,21 +126,10 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopInit() {}
 	
-	public static long startMillis;
-	public static boolean shouldStop = false;
-	
 	@Override
 	public void teleopPeriodic() {
 		SmartDashboard.putString("Controller Extend Ladder: ", "" + controller.extendLadder());
 		SmartDashboard.putString("Controller Retract Ladder: ", "" + controller.retractLadder());
-		
-//		if(controller.openClaw()) {
-//			ladder.openClawUnsafe();
-//		} else if(controller.closeClaw()){
-//			ladder.closeClawUnsafe();
-//		} else {
-//			claw.set(0);
-//		}
 		
 		if(controller.extendLadder()){
 			ladder.extendLadder();
@@ -175,45 +155,25 @@ public class Robot extends IterativeRobot {
 //				currentTask = new MultiTask(new TeleopTask(this), new MoveLadderTask(this, -1));
 //			}
 //		}
-//		
-		if(controller.coil()) {
-			coiler.set(-0.2);
-		} else {
-			coiler.set(0);
+		
+		// Claw
+		// everything below is assuming the ladder.openClaw() & ladder.closeClaw() function correctly
+		// it's 11 pm rn and I'm too tired to check for the logic here
+		// but the general idea should be understood via the comments
+		claw.set(0);						// if none of the stuff below happens, the claw would not move
+		if(controller.openClaw()) {			// if trigger is released
+			openClaw = true;				// go into open claw mode
 		}
-		//370 ms for closing.
-		
-		if(controller.triggerClaw()) {
-			openClaw = !openClaw;
-			startMillis = System.currentTimeMillis();
-			isStart = false;
-		}
-		
-		
-		if(!isStart) {
-			if(openClaw) {
-				ladder.openClaw();
-			} else {
-				ladder.closeClaw();
+		if(openClaw) {						// in open claw mode
+			ladder.openClaw();				// open claw(with limit switch)
+			if(!clawOpeningLimit.get()) {	// Used ! assuming claw limit switches are still negated
+				openClaw = false;			// when claw opens to limit, exit open claw mode
+			}
+		} else {							// if not in open claw mode
+			if(controller.closeClaw()) {	// if button 2 is pressed(pressed, not released)
+				ladder.closeClaw();			// close claw(with limit switch)
 			}
 		}
-		
-		
-//		 TODO: Not using this because it is probably going to be buggy and problematic with the available testing time
-//		if(controller.pressedExtendLadder()){
-//			if(currentTask instanceof MultiTask){
-//				((MultiTask) currentTask).cancelSecondaryTask();
-//				((MultiTask) currentTask).setSecondaryTask(new MoveLadderTask(this, 1));
-//			}
-//		} else if(controller.pressedRetractLadder()){
-//			if(currentTask instanceof MultiTask){
-//				((MultiTask) currentTask).cancelSecondaryTask();
-//				((MultiTask) currentTask).setSecondaryTask(new MoveLadderTask(this, -1));
-//			}
-//		}
-		
-		// Ladder safety
-		//ladder.safety();
 		
 		// Task Canceling
 		if(controller.cancelTask()) {
