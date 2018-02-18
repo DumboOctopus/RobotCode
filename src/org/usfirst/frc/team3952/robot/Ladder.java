@@ -11,23 +11,24 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Ladder {
 	private static final int SWITCH_ENC = 1500, SCALE_ENC = 4800;
+	public static final double CLOCKWISE = 1;
 	
 	private Talon ladder, coiler, claw;
 	private Encoder encoder;
-	private DigitalInput topLimit, frameBottomLimit, armBottomLimit, clawSwitch;
+	private DigitalInput topLimit, armBottomLimit, clawOpeningLimit, clawClosingLimit;
 	
 	private int pos;
 	
 	public Ladder(Talon ladder, Talon coiler, Talon claw, Encoder encoder, DigitalInput topLimit,
-		DigitalInput frameBottomLimit, DigitalInput armBottomLimit, DigitalInput clawSwitch) {
+		DigitalInput armBottomLimit, DigitalInput clawOpeningLimit, DigitalInput clawClosingLimit) {
 		this.ladder = ladder;
 		this.coiler = coiler;
 		this.claw = claw;
 		this.encoder = encoder;
 		this.topLimit = topLimit;
-		this.frameBottomLimit = frameBottomLimit;
 		this.armBottomLimit = armBottomLimit;
-		this.clawSwitch = clawSwitch;
+		this.clawOpeningLimit = clawOpeningLimit;
+		this.clawClosingLimit = clawClosingLimit;
 	}
 
 	public void extendLadder() {	
@@ -41,20 +42,7 @@ public class Ladder {
 	}
 
 	public void retractLadder() {
-		// TODO: technically only armBottomLimit.get() needs to be checked
-		// claim(under normal circumstances):
-		// if(armBottomLimit.get())
-		//     assert frameBottomLimit.get();
-		// proof: 
-		// assume that armBottomLimit.get() but !frameBottomLimit.get()
-		// the frame is not at the bottom
-		// the arm cannot be lower than the frame(i.e. under normal circumstances)
-		// !armBottomLimit.get()
-		// since armBottomLimit.get() and !armBottomLimit.get() cannot both be true
-		// thus by proof of contradiction, the assumption of (that armBottomLimit() but !frameBottomLimit.get()) == false
-		// thus when armBottomLimit.get(), !frameBottomLimit.get()
-		SmartDashboard.putString("Ladder Down: ", "" + !(frameBottomLimit.get() && armBottomLimit.get()));
-		if(!(frameBottomLimit.get() && armBottomLimit.get())){
+		if(!armBottomLimit.get()){
 			ladder.set(-0.4);
 		} else {
 			ladder.set(0);
@@ -64,8 +52,7 @@ public class Ladder {
 	
 	public boolean setPos(int newPos){
 		if(newPos == 0){ // if its all the way down
-			// TODO: same as above
-			if(frameBottomLimit.get() && armBottomLimit.get()){ // now we at the bottom
+			if(armBottomLimit.get()) { // now we at the bottom
 				pos = 0;
 				pulseIfNotMoving();
 				encoder.reset();
@@ -81,7 +68,8 @@ public class Ladder {
 			int diff = SWITCH_ENC - (int)encoder.getDistance(); // < 0 = downward
 			if(Math.abs(diff) < 100){
 				pos = 1;
-				pulseIfNotMoving();
+				ladder.set(0);
+//				pulseIfNotMoving();
 				return true;
 			} else if(diff > 0){
 				extendLadder();
@@ -98,7 +86,8 @@ public class Ladder {
 			int diff = SCALE_ENC - (int)encoder.getDistance(); // < 0 = downward
 			if(Math.abs(diff) < 100){
 				pos = 2;
-				pulseIfNotMoving();
+				ladder.set(0);
+//				pulseIfNotMoving();
 				return true;
 			} else if(diff > 0){
 				extendLadder();
@@ -113,7 +102,8 @@ public class Ladder {
 		if(newPos == 3){ // go up
 			if(topLimit.get()){ // now we at the top 
 				pos = 3;
-				pulseIfNotMoving();
+				ladder.set(0);
+//				pulseIfNotMoving();
 				return true;
 			} else{  // if we aren't at the top
 				extendLadder();
@@ -131,24 +121,43 @@ public class Ladder {
 	
 	// TODO: testing required
 	public void openClaw() {
-		if(!clawSwitch.get())
-			claw.set(-0.1);
-		else
+		//System.out.println("We made it to clawOpen");
+		if(clawOpeningLimit.get()) {
+			claw.set(-CLOCKWISE);
+			//System.out.println("claw.set(-1)");
+		}else {
+			//System.out.println("clow close 0");
 			claw.set(0);
+		}
 	}
 	
 	// TODO: testing required
 	public void closeClaw() {
-		claw.set(0);
+		//System.out.println("We made it to closeCLaw");
+		if(clawClosingLimit.get() && System.currentTimeMillis() - Robot.startMillis <= 380) {
+			claw.set(CLOCKWISE);
+			//System.out.println("claw.set(1)");
+		}else {
+			//System.out.println("clow close 0");
+			claw.set(0);
+		}
+	}
+	
+	public void closeClawUnsafe() {
+		claw.set(CLOCKWISE);
+	}
+	public void openClawUnsafe() {
+		claw.set(-CLOCKWISE);
 	}
 	
 	public void safety(){
-		if(clawSwitch.get()){
+		// TODO: test which way is open
+		if((!clawOpeningLimit.get() && claw.get() < 0) || (!clawClosingLimit.get() && claw.get() > 0)){
 			claw.set(0);
 		}
 		
 		// TODO: same as above
-		if(armBottomLimit.get() && frameBottomLimit.get() && ladder.get() < 0){
+		if(armBottomLimit.get() && ladder.get() < 0){
 			ladder.set(0);
 		}
 		

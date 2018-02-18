@@ -15,8 +15,8 @@ public class Controller {
 	public static final int RETRACT_LADDER = 4;
 	public static final int LADDER_UP = 6;
 	public static final int LADDER_DOWN = 8;
-	public static final int CLOSE_CLAW = 2;
-	public static final int COIL = 7;
+	public static final int TRIGGER_CLAW = 1;
+	public static final int COIL = 7, COIL2 = 8;
 	
 	private Joystick joystick;
 	
@@ -76,7 +76,20 @@ public class Controller {
 	}
 	
 	public boolean coil() {
-		return joystick.getRawButton(COIL);
+		return joystick.getRawButton(COIL) && joystick.getRawButton(COIL2);
+	}
+	
+	public boolean triggerClaw() {
+		return joystick.getRawButtonReleased(TRIGGER_CLAW);
+	}
+	
+	public boolean openClaw() {
+		return joystick.getRawButton(1);
+	}
+	
+	public boolean closeClaw() {
+		return joystick.getRawButton(2);
+		
 	}
 	
 //	public boolean pressedExtendLadder(){
