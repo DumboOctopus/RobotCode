@@ -17,6 +17,8 @@ public class Controller {
 	public static final int LADDER_UP = 6;
 	public static final int LADDER_DOWN = 8;
 	public static final int TRIGGER_CLAW = 1;
+	public static final int OPEN_CLAW = 1;
+	public static final int CLOSE_CLAW = 2;
 	public static final int COIL = 7, COIL2 = 8;
 	
 	public Joystick joystick;
@@ -49,7 +51,7 @@ public class Controller {
 	public double getHorizontalMovement() {
 		double x = joystick.getX();
 		return Math.abs(x) >= deadZonex ? 
-			   kx *Math.signum(x) * (Math.log(Math.abs(x) + 1 - deadZonex) + cx)	// TODO: k?
+			   kx * Math.signum(x) * (Math.log(Math.abs(x) + 1 - deadZonex) + cx)	// TODO: k?
 			   :
 			   0;
 	}
@@ -101,23 +103,31 @@ public class Controller {
 	}
 	
 	public boolean openClaw() {
-		return joystick.getRawButton(1);
+		return !joystick.getRawButton(COIL2) && joystick.getRawButton(OPEN_CLAW);
 	}
 	
 	public boolean closeClaw() {
-		return joystick.getRawButton(2);
+		return !joystick.getRawButton(COIL2) && joystick.getRawButton(CLOSE_CLAW);
+	}
+	
+	public boolean openClawUnsafe() {
+		return joystick.getRawButton(COIL2) && joystick.getRawButton(OPEN_CLAW);
+	}
+	
+	public boolean closeClawUnsafe() {
+		return joystick.getRawButton(COIL2) && joystick.getRawButton(CLOSE_CLAW);
 	}
 	
 	public boolean toggleSpeed(){
 		return joystick.getRawButtonPressed(8);
 	}
 	
-	//actually toggles teh speeds
+	//actually toggles the speeds
 	public void toggleTheSpeed(){
 		if(maxx > 0.79 && max > 0.79){
 			maxx = 0.5;
 			max = 0.5;
-		} else{
+		} else {
 			maxx = 0.8;
 			max = 0.8;
 		}

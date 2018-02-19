@@ -1,7 +1,6 @@
 package org.usfirst.frc.team3952.robot;
 
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // Encoders using no units
 /**
@@ -30,6 +29,10 @@ public class Ladder {
 		this.armBottomLimit = armBottomLimit;
 		this.clawOpeningLimit = clawOpeningLimit;
 		this.clawClosingLimit = clawClosingLimit;
+	}
+	
+	public void stopLadder() {
+		ladder.set(0);
 	}
 
 	public void extendLadder() {	
@@ -129,35 +132,36 @@ public class Ladder {
 		coiler.set(-0.4);
 	}
 	
-	// TODO: testing required
+	public void stopCoiling() {
+		coiler.set(0);
+	}
+	
 	public void openClaw() {
-		//System.out.println("We made it to clawOpen");
 		if(clawOpeningLimit.get()) {
 			claw.set(-CLOCKWISE);
-			//System.out.println("claw.set(-1)");
 		}else {
-			//System.out.println("clow close 0");
 			claw.set(0);
 		}
 	}
 	
-	// TODO: testing required
 	public void closeClaw() {
-		//System.out.println("We made it to closeCLaw");
-		if(clawClosingLimit.get() && System.currentTimeMillis() - Robot.startMillis <= 380) {
+		if(clawClosingLimit.get()/* && System.currentTimeMillis() - Robot.startMillis <= 380*/) {
 			claw.set(CLOCKWISE);
-			//System.out.println("claw.set(1)");
 		}else {
-			//System.out.println("clow close 0");
 			claw.set(0);
 		}
+	}
+	
+	public void stopClaw() {
+		claw.set(0);
+	}
+	
+	public void openClawUnsafe() {
+		claw.set(-CLOCKWISE);
 	}
 	
 	public void closeClawUnsafe() {
-		claw.set( CLOCKWISE);
-	}
-	public void openClawUnsafe() {
-		claw.set(-CLOCKWISE );
+		claw.set(CLOCKWISE);
 	}
 	
 	public void safety(){

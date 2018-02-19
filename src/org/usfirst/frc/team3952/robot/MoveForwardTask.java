@@ -40,16 +40,20 @@ public class MoveForwardTask extends Task {
 		//ggt = new GraduallyGoTO(0.32, 0.005); // ok
 	}
 	
-	// TODO: testing required
+	// TODO: neil says to use both encoders so it goes straight
+	//		 but it this wouldnt really do anything since any moving that happens in this method is
+	//		 driveCartesian(0, 0.4, 0), which is supposed to be straight
+	//		 so the fix should be if one encoder reads value smaller than the other the robot should rotate while moving
 	@Override
 	public boolean run() {
 		if(!started){
 			// just because the left encoder is so much more accurate than right.
-			initialDistance = leftEncoder.getDistance();
+			// not anymore. using both now.
+			initialDistance = (leftEncoder.getDistance() + rightEncoder.getDistance()) / 2;
 			started = true;
 		}
 		
-		double currentDistance = leftEncoder.getDistance();
+		double currentDistance = (leftEncoder.getDistance() + rightEncoder.getDistance()) / 2;
 		if(currentDistance >= initialDistance + distance - 0.1) {
 			drive.driveCartesian(0, 0, 0);
 			return true;
