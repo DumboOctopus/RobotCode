@@ -164,6 +164,10 @@ public class Ladder {
 		claw.set(CLOCKWISE);
 	}
 	
+	public boolean atBottom() {
+		return armBottomLimit.get();
+	}
+	
 	public void safety(){
 		// TODO: test which way is open
 		if((!clawOpeningLimit.get() && claw.get() < 0) || (!clawClosingLimit.get() && claw.get() > 0)){

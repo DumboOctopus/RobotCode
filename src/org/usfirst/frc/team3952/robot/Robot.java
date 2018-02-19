@@ -249,7 +249,9 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit(){
+		autonomousQueue.add(new ResetLadderTask(this));
 		autonomousQueue.add(new MoveForwardTask(this, 6));
+		stopMotors();
 		
 		//
 	//	Servo servo =new Servo(1);
