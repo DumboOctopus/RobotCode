@@ -10,24 +10,35 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Controller {
 	//=== Buttons ===\\
 	// TODO: decide these
+	public static final int CANCEL_TASK = 1;
 	public static final int EXTEND_LADDER = 3;
 	public static final int RETRACT_LADDER = 4;
+	//why do we have these two?
 	public static final int LADDER_UP = 6;
 	public static final int LADDER_DOWN = 8;
-	public static final int OPEN_CLAW = 1;
-	public static final int CLOSE_CLAW = 2;
+	public static final int TRIGGER_CLAW = 1;
 	public static final int COIL = 7, COIL2 = 8;
 	
-	private Joystick joystick;
+	public Joystick joystick;
 	
 	// horizontal / lateral movement = k * ln(|x| + 1 - dead zone) + C
 	// C = minimum velocity
 	// k = (max velocity - C) / ln(1 + 1 - dead zone)		
 	private double c = 0.1;
 	private double deadZone = 0.2;
-	private double max = 0.8;
+	public double max = 0.8;
 	private double k = (max - c) / Math.log(2 - deadZone);
-			
+	
+	private double cx = 0.2;
+	private double deadZonex = 0.2;
+	public double maxx = 0.8;
+	private double kx = (maxx - cx) / Math.log(2 - deadZonex);
+	
+	private double ct = 0.08;
+	private double deadZonet = 0.08;
+	private double maxt = 0.4;
+	private double kt = (maxt - ct) / Math.log(2 - deadZonet);
+	
 	
 	public Controller() {
 		joystick = new Joystick(0);
@@ -37,8 +48,8 @@ public class Controller {
 	
 	public double getHorizontalMovement() {
 		double x = joystick.getX();
-		return Math.abs(x) >= deadZone ? 
-			   Math.signum(x) * (Math.log(Math.abs(x) + 1 - deadZone) + c)	// TODO: k?
+		return Math.abs(x) >= deadZonex ? 
+			   kx *Math.signum(x) * (Math.log(Math.abs(x) + 1 - deadZonex) + cx)	// TODO: k?
 			   :
 			   0;
 	}
@@ -54,7 +65,13 @@ public class Controller {
 	
 	// positive = clockwise
 	public double getRotation() {
-		return 0.3 * joystick.getZ();
+		double t = joystick.getZ();
+		return Math.abs(t) >= deadZonet ? 
+			   kt * Math.signum(t) * (Math.log(Math.abs(t) + 1 - deadZonet) + ct)
+			   :
+			   0;
+		
+		//return 0.4 * joystick.getZ();
 	}
 	
 	//=== Buttons ===\\
@@ -79,12 +96,34 @@ public class Controller {
 		return joystick.getRawButton(COIL) && joystick.getRawButton(COIL2);
 	}
 	
+	public boolean triggerClaw() {
+		return joystick.getRawButtonReleased(TRIGGER_CLAW);
+	}
+	
 	public boolean openClaw() {
-		return joystick.getRawButtonReleased(OPEN_CLAW);
+		return joystick.getRawButton(1);
 	}
 	
 	public boolean closeClaw() {
-		return joystick.getRawButton(CLOSE_CLAW);
+		return joystick.getRawButton(2);
+	}
+	
+	public boolean toggleSpeed(){
+		return joystick.getRawButtonPressed(8);
+	}
+	
+	//actually toggles teh speeds
+	public void toggleTheSpeed(){
+		if(maxx > 0.79 && max > 0.79){
+			maxx = 0.5;
+			max = 0.5;
+		} else{
+			maxx = 0.8;
+			max = 0.8;
+		}
+		
+		k = (max - c) / Math.log(2 - deadZone);
+		kx = (maxx - cx) / Math.log(2 - deadZonex);
 		
 	}
 	

@@ -55,7 +55,7 @@ public class MoveForwardTask extends Task {
 			return true;
 		} 
 	
-		drive.driveCartesian(0, 0.28, 0);		// we will need to recalibrate this later.
+		drive.driveCartesian(0, 0.4, 0);		// we will need to recalibrate this later.
 		return false;
 	
 	}

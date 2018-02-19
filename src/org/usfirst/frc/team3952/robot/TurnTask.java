@@ -45,9 +45,9 @@ public class TurnTask extends Task {
 		
 		// move
 		if(degrees < 0){
-			drive.driveCartesian(0, 0, -0.25);
+			drive.driveCartesian(0, 0, -0.3);
 		} else if (degrees > 0){
-			drive.driveCartesian(0, 0, 0.25);
+			drive.driveCartesian(0, 0, 0.3);
 		} 
 		
 		// make sure to change last millis

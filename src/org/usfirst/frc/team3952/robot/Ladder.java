@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Ladder {
 	private static final int SWITCH_ENC = 1500, SCALE_ENC = 4800;
 	public static final double CLOCKWISE = 1;
+	public double ladderSpeedUp = 0.65, ladderSpeedDown = 0.4;
 	
 	private Talon ladder, coiler, claw;
 	private Encoder encoder;
@@ -33,28 +34,39 @@ public class Ladder {
 
 	public void extendLadder() {	
 		if(!topLimit.get()){
-			ladder.set(0.65);
+			ladder.set(ladderSpeedUp);
 		} else {
 			ladder.set(0);
-//			pulseIfNotMoving();
 		}
-		
 	}
 
 	public void retractLadder() {
 		if(!armBottomLimit.get()){
-			ladder.set(-0.4);
+			ladder.set(-ladderSpeedDown);
 		} else {
 			ladder.set(0);
 		}
 		
 	}
 	
+	public void toggleLadder(){
+		if(ladderSpeedUp > 0.6){
+			ladderSpeedUp = 0.5;
+		} else{
+			ladderSpeedUp = 0.65;
+		}
+		
+		if(ladderSpeedDown > 0.35 ){
+			ladderSpeedDown = 0.33;
+		} else{
+			ladderSpeedDown = 0.4;
+		}
+	}
+	
 	public boolean setPos(int newPos){
 		if(newPos == 0){ // if its all the way down
 			if(armBottomLimit.get()) { // now we at the bottom
 				pos = 0;
-				pulseIfNotMoving();
 				encoder.reset();
 				return true;
 			} else {  // if we aren't at the bottom
@@ -62,7 +74,6 @@ public class Ladder {
 				return false;
 			}
 		}
-		
 		
 		if(newPos == 1){ // if it's switch
 			int diff = SWITCH_ENC - (int)encoder.getDistance(); // < 0 = downward
@@ -80,8 +91,7 @@ public class Ladder {
 			}
 			
 		}
-		
-		
+				
 		if(newPos == 2){ // if it's scale
 			int diff = SCALE_ENC - (int)encoder.getDistance(); // < 0 = downward
 			if(Math.abs(diff) < 100){
@@ -134,7 +144,7 @@ public class Ladder {
 	// TODO: testing required
 	public void closeClaw() {
 		//System.out.println("We made it to closeCLaw");
-		if(clawClosingLimit.get()) {
+		if(clawClosingLimit.get() && System.currentTimeMillis() - Robot.startMillis <= 380) {
 			claw.set(CLOCKWISE);
 			//System.out.println("claw.set(1)");
 		}else {
@@ -144,10 +154,10 @@ public class Ladder {
 	}
 	
 	public void closeClawUnsafe() {
-		claw.set(CLOCKWISE);
+		claw.set( CLOCKWISE);
 	}
 	public void openClawUnsafe() {
-		claw.set(-CLOCKWISE);
+		claw.set(-CLOCKWISE );
 	}
 	
 	public void safety(){
@@ -166,12 +176,6 @@ public class Ladder {
 		}
 		
 		//coiler.set(0);
-	}
-	
-	public void pulseIfNotMoving(){
-		int rand = (int)(2 * Math.random()); // [0, 1) -> [0, 2) -> 0 or 1
-		// there is a 50% chance the ladder will be at 0.05 power, 50% chance it will be at 0.
-		ladder.set(0.08 * rand); // so about half the time it should pulse on
 	}
 	
 	public int getPos(){
