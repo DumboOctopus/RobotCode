@@ -44,7 +44,7 @@ public class Robot extends IterativeRobot {
 	private DigitalInput topLimit, armBottomLimit, clawOpeningLimit, clawClosingLimit;
 	private Ladder ladder;
 	private Servo servo;
-	private boolean dropClaw, clawWillOpen;
+	private boolean dropClaw;
 	private long servoStartTime;
 	
 	//=== Task System ===\\
@@ -120,8 +120,6 @@ public class Robot extends IterativeRobot {
 		autonomousChooser.addDefault("Starting Right", "R");
 		SmartDashboard.putData("Autonomous Initial Position", autonomousChooser);
 		
-		clawWillOpen = true;
-		
 //		startMillis = System.currentTimeMillis();
 //		shouldStop = false;
 		
@@ -151,7 +149,7 @@ public class Robot extends IterativeRobot {
 	/** called every ~20 ms*/
 	@Override
 	public void teleopPeriodic() {
-		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 2000) {	// stop servo after ~2 seconds
+		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 5000) {	// stop servo after ~5 seconds
 			servo.setPosition(0.515);		// 0.515 makes it stop
 			dropClaw = false;
 		}
@@ -423,22 +421,21 @@ public class Robot extends IterativeRobot {
 		
 		SmartDashboard.putString("Current Task: ", currentTask.toString());
 		
-		SmartDashboard.putString("Left Encoder: ", "" + leftEncoder.getDistance());
-		SmartDashboard.putString("Right Encoder: ", "" + rightEncoder.getDistance());
+		SmartDashboard.putNumber("Left Encoder: ", leftEncoder.getDistance());
+		SmartDashboard.putNumber("Right Encoder: ", rightEncoder.getDistance());
 		SmartDashboard.putNumber("Left Encoder Pulses: ", leftEncoder.getRaw());
 		SmartDashboard.putNumber("Right Encoder pulses: ", rightEncoder.getRate());
 		
 		
-		SmartDashboard.putString("Gyro: ", "" + gyro.getAngle());
+		SmartDashboard.putNumber("Gyro: ", ((int)gyro.getAngle() + 180) % 360 - 180);	// put angle in range [-180, 180]
 		
-		SmartDashboard.putString("Ladder Top Limit: ", "" + topLimit.get());
-		SmartDashboard.putString("Ladder Bottom Limit: ", "" + armBottomLimit.get());
+		SmartDashboard.putBoolean("Ladder Top Limit: ", topLimit.get());
+		SmartDashboard.putBoolean("Ladder Bottom Limit: ", armBottomLimit.get());
 		
-		SmartDashboard.putString("Claw Opened Max: ", "" + !clawOpeningLimit.get());
-		SmartDashboard.putString("Claw Closed Max: ", "" + !clawClosingLimit.get());
-		SmartDashboard.putString("Claw Opening: ", "" + clawWillOpen);
+		SmartDashboard.putBoolean("Claw Opened Max: ", !clawOpeningLimit.get());
+		SmartDashboard.putBoolean("Claw Closed Max: ", !clawClosingLimit.get());
 		SmartDashboard.putString("Claw Power: ", "" + claw.get() + " " + (claw.get() < 0 ? "Opening": "Closing"));
-		SmartDashboard.putString("Ladder Encoder: ", "" + ladderEncoder.getDistance());	
+		SmartDashboard.putNumber("Ladder Encoder: ", ladderEncoder.getDistance());	
 		
 	}
 }
