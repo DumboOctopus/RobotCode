@@ -45,6 +45,7 @@ public class Robot extends IterativeRobot {
 	private Ladder ladder;
 	private Servo servo;
 	private boolean dropClaw, clawWillOpen;
+	private long servoStartTime;
 	
 	//=== Task System ===\\
 	
@@ -56,8 +57,7 @@ public class Robot extends IterativeRobot {
 	private boolean autonomousInited = false;
 //	public static long startMillis;						// claw is manual now
 //	public static boolean shouldStop = false;			// not used
-	
-	
+		
 	//=== Camera ===\\
 	private UsbCamera camera;
 	
@@ -105,8 +105,7 @@ public class Robot extends IterativeRobot {
 		
 		ladder = new Ladder(ladderT, coiler, claw, ladderEncoder, topLimit, armBottomLimit, clawOpeningLimit, clawClosingLimit);
 		
-		servo = new Servo(8);
-		dropClaw = true;
+		servo = new Servo(7);
 		
 		//=== Task System Initialization===\\
 		
@@ -139,16 +138,24 @@ public class Robot extends IterativeRobot {
 	public void disabledInit() {}
 
 	//=== Teleop ===\\
-
 	@Override
 	public void teleopInit() {
 		stopMotors();
+		
+		dropClaw = true;								// don't move these into teleop
+		servoStartTime = System.nanoTime() / 1000000L;
+		servo.setPosition(0);
 	}
 	
 	
 	/** called every ~20 ms*/
 	@Override
 	public void teleopPeriodic() {
+		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 2000) {	// stop servo after ~2 seconds
+			servo.setPosition(0.515);		// 0.515 makes it stop
+			dropClaw = false;
+		}
+		
 		
 		//---unsafe (not using limit switches or timers) claw------------//
 //		if(controller.openClaw()) {
