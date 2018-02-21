@@ -52,10 +52,11 @@ public class Robot extends IterativeRobot {
 	private Task currentTask;
 	private Queue<Task> autonomousQueue;
 	private SendableChooser<String> autonomousChooser;
-	
-//	private boolean isStart = true;						// not used
+
+	private boolean clawWillOpen;
+	private boolean isStart = true;						// not used
 	private boolean autonomousInited = false;
-//	public static long startMillis;						// claw is manual now
+	public static long startMillis;						// claw is manual now
 //	public static boolean shouldStop = false;			// not used
 		
 	//=== Camera ===\\
@@ -93,6 +94,7 @@ public class Robot extends IterativeRobot {
 		ladderT = new Talon(6);		
 		coiler = new Talon(4);    
 		claw = new Talon(5);
+		
 		
 		ladderEncoder = new Encoder(4, 5, false, Encoder.EncodingType.k2X);
 		ladderEncoder.setDistancePerPulse(1);	// We are not going to calibrate
@@ -140,19 +142,19 @@ public class Robot extends IterativeRobot {
 	public void teleopInit() {
 		stopMotors();
 		
-		dropClaw = true;								// don't move these into teleop
-		servoStartTime = System.nanoTime() / 1000000L;
-		servo.setPosition(0);
+//		dropClaw = true;								// don't move these into teleop
+//		servoStartTime = System.nanoTime() / 1000000L;
+//		servo.setPosition(0);
 	}
 	
 	
 	/** called every ~20 ms*/
 	@Override
 	public void teleopPeriodic() {
-		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 5000) {	// stop servo after ~5 seconds
-			servo.setPosition(0.515);		// 0.515 makes it stop
-			dropClaw = false;
-		}
+//		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 5500) {	// stop servo after ~5 seconds
+//			servo.setPosition(0.515);		// 0.515 makes it stop
+//			dropClaw = false;
+//		}
 		
 		
 		//---unsafe (not using limit switches or timers) claw------------//
@@ -178,6 +180,7 @@ public class Robot extends IterativeRobot {
 			ladder.extendLadder();
 		} else if(controller.retractLadder()) {
 			ladder.retractLadder();
+			((MultiTask) currentTask).cancelSecondaryTask();;
 		} else {
 			ladderT.set(0);	// TODO: should be fine for now
 		}
@@ -189,52 +192,30 @@ public class Robot extends IterativeRobot {
 			coiler.set(0);
 		}
 		
-//		//--------claw using toggling-----------------------------------//
-//		if(controller.triggerClaw()) {
-//			//if we aren't opening claw, we can go
-//			//if we are opening, we can only go if clawOpening is Pressed (clawOpeningLimit.get() == false)
-//			if(!clawWillOpen || clawWillOpen && !clawOpeningLimit.get() ) 
-//				clawWillOpen = !clawWillOpen;
-//			startMillis = System.currentTimeMillis();
-//			isStart = false;
-//		}	
-//		if(!isStart) {
-//			if(clawWillOpen) {
-//				ladder.openClaw();
-//			} else {
-//				ladder.closeClaw();
-//			}
-//		}
+		//--------claw using toggling-----------------------------------//
 		
-		//-------- Claw: 2 buttons, holding = open / close + safety button----//
-		if(controller.openClaw()) {
-			ladder.openClaw();
-		} else if(controller.closeClaw()) {
-			ladder.closeClaw();
-		} else if(controller.openClawUnsafe()) {
+		if(!controller.unsafeOpenClaw()){
+			if(controller.triggerClaw()) {
+				//if we aren't opening claw, we can go
+				//if we are opening, we can only go if clawOpening is Pressed (clawOpeningLimit.get() == false)
+				if(!clawWillOpen || clawWillOpen && !clawOpeningLimit.get() ) 
+					clawWillOpen = !clawWillOpen;
+				startMillis = System.currentTimeMillis();
+				isStart = false;
+			}	
+			if(!isStart) {
+				if(clawWillOpen) {
+					ladder.openClaw();
+				} else {
+					ladder.closeClaw();
+				}
+			}
+		} else{
 			ladder.openClawUnsafe();
-		} else if(controller.closeClawUnsafe()) {
-			ladder.closeClawUnsafe();
-		} else {
-			ladder.stopClaw();
 		}
-		
-//		if(controller.joystick.getRawButton(1)){
-//			claw.set(-1);
-//		} else if(controller.joystick.getRawButton(2)){
-//			claw.set(0.4);
-//		} else{
-//			claw.set(0);
-//		}
 		
 		// Ladder safety
 		//ladder.safety();
-		
-		// ---------------Task Canceling---------------------------------///
-		if(controller.cancelTask()) {
-			currentTask.cancel();
-			currentTask = new MultiTask(new TeleopTask(this), null);
-		}
 		
 		//---------- Task running----------------------------------------//
 		if(currentTask.run()){
@@ -254,6 +235,10 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit(){
+		dropClaw = true;								// don't move these into teleop
+		servoStartTime = System.nanoTime() / 1000000L;
+		servo.setPosition(0);
+		
 		autonomousQueue.add(new ResetLadderTask(this));
 		autonomousQueue.add(new MoveForwardTask(this, 6));
 		stopMotors();
@@ -273,12 +258,14 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void autonomousPeriodic(){
+		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 5500) {	// stop servo after ~5 seconds
+			servo.setPosition(0.515);		// 0.515 makes it stop
+			dropClaw = false;
+		}
+		
 /*================================================Commented for testing==============================================================*\
 		// Immediately after the game starts, drop down the claw(can this be put in autonomousInit()?)
-//		if(dropClaw) {
-//			servo.setAngle(90);	// TODO: still requires testing
-//			dropClaw = false;
-//		}
+
 		SmartDashboard.putString("Game Specific Message: ",DriverStation.getInstance().getGameSpecificMessage());
 		//runs only once when we get real data
 		if(!autonomousInited && !DriverStation.getInstance().getGameSpecificMessage().equals("")){
@@ -423,9 +410,6 @@ public class Robot extends IterativeRobot {
 		
 		SmartDashboard.putNumber("Left Encoder: ", leftEncoder.getDistance());
 		SmartDashboard.putNumber("Right Encoder: ", rightEncoder.getDistance());
-		SmartDashboard.putNumber("Left Encoder Pulses: ", leftEncoder.getRaw());
-		SmartDashboard.putNumber("Right Encoder pulses: ", rightEncoder.getRate());
-		
 		
 		SmartDashboard.putNumber("Gyro: ", ((int)gyro.getAngle() + 180) % 360 - 180);	// put angle in range [-180, 180]
 		
@@ -436,6 +420,8 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putBoolean("Claw Closed Max: ", !clawClosingLimit.get());
 		SmartDashboard.putString("Claw Power: ", "" + claw.get() + " " + (claw.get() < 0 ? "Opening": "Closing"));
 		SmartDashboard.putNumber("Ladder Encoder: ", ladderEncoder.getDistance());	
+		
+		SmartDashboard.putNumber("Ladder Pos", ladder.getPos());
 		
 	}
 }

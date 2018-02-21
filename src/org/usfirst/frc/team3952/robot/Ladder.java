@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.*;
  * 	The motor has so much torque, it will go at the same speed regardless of weight change
  */
 public class Ladder {
-	private static final int SWITCH_ENC = 1500, SCALE_ENC = 4800;
+	private static final int SWITCH_ENC = 2000; //scale height is max height
 	public static final double CLOCKWISE = 1;
 	public double ladderSpeedUp = 0.65, ladderSpeedDown = 0.4;
 	
@@ -29,6 +29,7 @@ public class Ladder {
 		this.armBottomLimit = armBottomLimit;
 		this.clawOpeningLimit = clawOpeningLimit;
 		this.clawClosingLimit = clawClosingLimit;
+		pos = 0;
 	}
 	
 	public void stopLadder() {
@@ -48,6 +49,7 @@ public class Ladder {
 			ladder.set(-ladderSpeedDown);
 		} else {
 			ladder.set(0);
+			encoder.reset();
 		}
 		
 	}
@@ -83,7 +85,6 @@ public class Ladder {
 			if(Math.abs(diff) < 100){
 				pos = 1;
 				ladder.set(0);
-//				pulseIfNotMoving();
 				return true;
 			} else if(diff > 0){
 				extendLadder();
@@ -95,28 +96,11 @@ public class Ladder {
 			
 		}
 				
-		if(newPos == 2){ // if it's scale
-			int diff = SCALE_ENC - (int)encoder.getDistance(); // < 0 = downward
-			if(Math.abs(diff) < 100){
-				pos = 2;
-				ladder.set(0);
-//				pulseIfNotMoving();
-				return true;
-			} else if(diff > 0){
-				extendLadder();
-				return false;
-			} else {
-				retractLadder();
-				return false;
-			}
-			
-		}
 		
-		if(newPos == 3){ // go up
+		if(newPos == 2){ // go up
 			if(topLimit.get()){ // now we at the top 
 				pos = 3;
 				ladder.set(0);
-//				pulseIfNotMoving();
 				return true;
 			} else{  // if we aren't at the top
 				extendLadder();
@@ -145,7 +129,7 @@ public class Ladder {
 	}
 	
 	public void closeClaw() {
-		if(clawClosingLimit.get()/* && System.currentTimeMillis() - Robot.startMillis <= 380*/) {
+		if(clawClosingLimit.get() && System.currentTimeMillis() - Robot.startMillis <= 380) {
 			claw.set(CLOCKWISE);
 		}else {
 			claw.set(0);
@@ -157,7 +141,7 @@ public class Ladder {
 	}
 	
 	public void openClawUnsafe() {
-		claw.set(-CLOCKWISE);
+		claw.set(-CLOCKWISE * 0.8); //just so it doesn't kill any switch
 	}
 	
 	public void closeClawUnsafe() {

@@ -10,16 +10,18 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Controller {
 	//=== Buttons ===\\
 	// TODO: decide these
-	public static final int CANCEL_TASK = 1;
+//	public static final int CANCEL_TASK = 1;
 	public static final int EXTEND_LADDER = 3;
 	public static final int RETRACT_LADDER = 4;
 	//why do we have these two?
-	public static final int LADDER_UP = 6;
-	public static final int LADDER_DOWN = 8;
+//	public static final int LADDER_UP = 6;
+//	public static final int LADDER_DOWN = 8;
 	public static final int TRIGGER_CLAW = 1;
-	public static final int OPEN_CLAW = 1;
-	public static final int CLOSE_CLAW = 2;
-	public static final int COIL = 7, COIL2 = 8;
+//	public static final int OPEN_CLAW = 1;
+//	public static final int CLOSE_CLAW = 2;
+	public static final int COIL = 7, COIL2 = 5;
+	public static final int TOGGLE_SPEED = 8;
+	public static final int USE_UNSAFE_CLAW_OPEN = 5;
 	
 	public Joystick joystick;
 	
@@ -86,13 +88,13 @@ public class Controller {
 		return joystick.getRawButton(RETRACT_LADDER);
 	}
 	
-	public boolean ladderUp() {
-		return joystick.getRawButton(LADDER_UP);
-	}
-	
-	public boolean ladderDown() {
-		return joystick.getRawButton(LADDER_DOWN);
-	}
+//	public boolean ladderUp() {
+//		return joystick.getRawButton(LADDER_UP);
+//	}
+//	
+//	public boolean ladderDown() {
+//		return joystick.getRawButton(LADDER_DOWN);
+//	}
 	
 	public boolean coil() {
 		return joystick.getRawButton(COIL) && joystick.getRawButton(COIL2);
@@ -102,24 +104,28 @@ public class Controller {
 		return joystick.getRawButtonReleased(TRIGGER_CLAW);
 	}
 	
-	public boolean openClaw() {
-		return !joystick.getRawButton(COIL2) && joystick.getRawButton(OPEN_CLAW);
-	}
+//	public boolean openClaw() {
+//		return !joystick.getRawButton(COIL2) && joystick.getRawButton(OPEN_CLAW);
+//	}
+//	
+//	public boolean closeClaw() {
+//		return !joystick.getRawButton(COIL2) && joystick.getRawButton(CLOSE_CLAW);
+//	}
+//	
+//	public boolean openClawUnsafe() {
+//		return joystick.getRawButton(COIL2) && joystick.getRawButton(OPEN_CLAW);
+//	}
+//	
+//	public boolean closeClawUnsafe() {
+//		return joystick.getRawButton(COIL2) && joystick.getRawButton(CLOSE_CLAW);
+//	}
 	
-	public boolean closeClaw() {
-		return !joystick.getRawButton(COIL2) && joystick.getRawButton(CLOSE_CLAW);
-	}
-	
-	public boolean openClawUnsafe() {
-		return joystick.getRawButton(COIL2) && joystick.getRawButton(OPEN_CLAW);
-	}
-	
-	public boolean closeClawUnsafe() {
-		return joystick.getRawButton(COIL2) && joystick.getRawButton(CLOSE_CLAW);
+	public boolean unsafeOpenClaw(){
+		return joystick.getRawButton(USE_UNSAFE_CLAW_OPEN);
 	}
 	
 	public boolean toggleSpeed(){
-		return joystick.getRawButtonPressed(8);
+		return joystick.getRawButtonPressed(TOGGLE_SPEED);
 	}
 	
 	//actually toggles the speeds
@@ -145,7 +151,4 @@ public class Controller {
 //		return joystick.getRawButtonPressed(RETRACT_LADDER);
 //	}
 	
-	public boolean cancelTask() {
-		return joystick.getRawButton(CANCEL_TASK);
-	}
 }

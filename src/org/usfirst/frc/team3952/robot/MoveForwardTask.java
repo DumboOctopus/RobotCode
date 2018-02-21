@@ -10,20 +10,23 @@ import edu.wpi.first.wpilibj.drive.*;
  *
  */
 public class MoveForwardTask extends Task {
+	private static final double CORRECTION_CONSTANT = 0.1;
+	
 	private MecanumDrive drive;
 	private Encoder leftEncoder, rightEncoder;
 	private double initialDistance;
 	private double distance;
+	private boolean nudge;
 	
 	private boolean started = false;
 	//private GraduallyGoTo ggt;
 	
-	public MoveForwardTask(Robot robot, double distance) {
+	public MoveForwardTask(Robot robot, double distance, boolean nudge) {
 		drive = robot.getDrive();
 		leftEncoder = robot.getLeftEncoder();
 		rightEncoder = robot.getRightEncoder();
 		this.distance = distance;
-		
+		this.nudge = nudge;
 		//ggt = new GraduallyGoTo(0, 0.009); 
 		/**
 		 * Observations:
@@ -59,7 +62,8 @@ public class MoveForwardTask extends Task {
 			return true;
 		} 
 	
-		drive.driveCartesian(0, 0.4, 0);		// we will need to recalibrate this later.
+		double diff = leftEncoder.getRate() - rightEncoder.getRate();
+		drive.driveCartesian(0, nudge? 0.3: 0.4, diff * CORRECTION_CONSTANT);		// we will need to recalibrate this later.
 		return false;
 	
 	}

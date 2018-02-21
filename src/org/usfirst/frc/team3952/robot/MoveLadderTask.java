@@ -16,7 +16,9 @@ public class MoveLadderTask extends Task {
 	}
 
 	@Override
-	public void cancel() {}
+	public void cancel() {
+		ladder.setPos(ladder.getPos());
+	}
 
 	@Override
 	public String toString() {
