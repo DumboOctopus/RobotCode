@@ -18,13 +18,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * claw				5
  * 
  * Tasks:
- * 	-Ladder Code Test
- * 	-Claw Code
- * 	-Driving focus
- * 		- Ask Drivers if they want manuall control ladder? or nah
- * 
- * 	-Autonomous later.
- * 	
+ * 	-Limit switches
+ * 	-Ladder reset
+ *  -MoveForward Straighting test
+ *  -
  * 
  */
 public class Robot extends IterativeRobot {
@@ -54,9 +51,8 @@ public class Robot extends IterativeRobot {
 	private SendableChooser<String> autonomousChooser;
 
 	private boolean clawWillOpen;
-	private boolean isStart = true;						// not used
 	private boolean autonomousInited = false;
-	public static long startMillis;						// claw is manual now
+	public static long startMillis;
 //	public static boolean shouldStop = false;			// not used
 		
 	//=== Camera ===\\
@@ -69,10 +65,10 @@ public class Robot extends IterativeRobot {
 		//=== Drive Initialization ===\\
 		controller = new Controller();
 		
-		frontLeft = new Talon(1);
-		frontRight = new Talon(0);
-		rearLeft = new Talon(3);
-		rearRight = new Talon(2);			
+		frontLeft = new HandicappedTalon(1, 0);
+		frontRight = new HandicappedTalon(0,0);
+		rearLeft = new HandicappedTalon(3,0);
+		rearRight = new HandicappedTalon(2,0);			
 		
 		// Initialize Encoders
 		rightEncoder = new Encoder(2, 3, false, Encoder.EncodingType.k1X); // We can also try k4 for more accuracy.
@@ -103,7 +99,7 @@ public class Robot extends IterativeRobot {
 //		frameBottomLimit = new DigitalInput(8);
 		armBottomLimit = new DigitalInput(7);
 		clawOpeningLimit = new DigitalInput(8);
-		clawClosingLimit = new DigitalInput(9);
+		clawClosingLimit = new DigitalInput(9); 
 		
 		ladder = new Ladder(ladderT, coiler, claw, ladderEncoder, topLimit, armBottomLimit, clawOpeningLimit, clawClosingLimit);
 		
@@ -125,13 +121,11 @@ public class Robot extends IterativeRobot {
 //		startMillis = System.currentTimeMillis();
 //		shouldStop = false;
 		
-		camera = CameraServer.getInstance().startAutomaticCapture();
-		camera.setResolution(640, 480);
+		//camera = CameraServer.getInstance().startAutomaticCapture();
+		//camera.setResolution(640, 480); //(160, 120) 
 
 		stopMotors();
 	}
-	
-	
 	//=== Disabled ===\\
 	
 	@Override
@@ -151,6 +145,8 @@ public class Robot extends IterativeRobot {
 	/** called every ~20 ms*/
 	@Override
 	public void teleopPeriodic() {
+		
+		servo.setPosition(0.515); //stop servo
 //		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 5500) {	// stop servo after ~5 seconds
 //			servo.setPosition(0.515);		// 0.515 makes it stop
 //			dropClaw = false;
@@ -168,8 +164,9 @@ public class Robot extends IterativeRobot {
 		
 		//------------------------ controller halving speed-------//
 		if(controller.toggleSpeed()) {
-			controller.toggleTheSpeed();
-			ladder.toggleLadder();
+			//temporary got rid of slow mode
+			//controller.toggleTheSpeed();
+			//ladder.toggleLadder();
 		}
 		SmartDashboard.putString("Controller Speed: ", controller.max + " / " + controller.maxx);
 		SmartDashboard.putString("Ladder Speed: ", ladder.ladderSpeedUp + " / " + ladder.ladderSpeedDown);
@@ -180,7 +177,6 @@ public class Robot extends IterativeRobot {
 			ladder.extendLadder();
 		} else if(controller.retractLadder()) {
 			ladder.retractLadder();
-			((MultiTask) currentTask).cancelSecondaryTask();;
 		} else {
 			ladderT.set(0);	// TODO: should be fine for now
 		}
@@ -201,17 +197,14 @@ public class Robot extends IterativeRobot {
 				if(!clawWillOpen || clawWillOpen && !clawOpeningLimit.get() ) 
 					clawWillOpen = !clawWillOpen;
 				startMillis = System.currentTimeMillis();
-				isStart = false;
 			}	
-			if(!isStart) {
-				if(clawWillOpen) {
-					ladder.openClaw();
-				} else {
-					ladder.closeClaw();
-				}
+			if(clawWillOpen) {
+				ladder.openClaw();
+			} else {
+				ladder.closeClaw();
 			}
 		} else{
-			ladder.openClawUnsafe();
+			//ladder.openClawUnsafe();
 		}
 		
 		// Ladder safety
@@ -239,8 +232,8 @@ public class Robot extends IterativeRobot {
 		servoStartTime = System.nanoTime() / 1000000L;
 		servo.setPosition(0);
 		
-		autonomousQueue.add(new ResetLadderTask(this));
-		autonomousQueue.add(new MoveForwardTask(this, 6));
+		//autonomousQueue.add(new ResetLadderTask(this));
+		//autonomousQueue.add(new MoveForwardTask(this, 6, false));
 		stopMotors();
 		
 		//
@@ -258,11 +251,66 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void autonomousPeriodic(){
-		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 5500) {	// stop servo after ~5 seconds
+		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 12000) {	// stop servo after ~5 seconds
 			servo.setPosition(0.515);		// 0.515 makes it stop
 			dropClaw = false;
+			autonomousQueue.add(new MoveLadderTask(this, 1));
 		}
 		
+		/**
+		 * To test at the field
+		 * 	Drop claw again testing lo,l
+		 * 	Cube in autonomous holding thingy
+		 * 		Does it drop when claw drop
+		 * 	Drive stragiht (MoveForward Task)
+		 * 	Autonomous sequences.... 
+		 * 
+		 * 
+		 * Tasks:
+		 * 	Smart Dashboard fix
+		 * 	
+		 */
+		
+		// Immediately after the game starts, drop down the claw(can this be put in autonomousInit()?)
+		SmartDashboard.putString("Game Specific Message: ",DriverStation.getInstance().getGameSpecificMessage());
+		//runs only once when we get real data
+//		if(!autonomousInited && !DriverStation.getInstance().getGameSpecificMessage().equals("")){
+//			String stuff = DriverStation.getInstance().getGameSpecificMessage(); // e.g. LRL
+//			
+//			String switchPos = stuff.substring(0, 1);
+//			String scalePos = stuff.substring(1, 2);
+//			String ourPosition = "L"; // L, R, M //
+////			String ourPosition = autonomousChooser.getSelected(); // L, R, M
+//			
+//			SmartDashboard.putString("In Game Specific Message", stuff);
+//			
+//			if(ourPosition.equals("L") || ourPosition.equals("R")){
+//				autonomousQueue.add(new MoveForwardTask(this, 10, false));
+//			} else if(ourPosition.equals("M")){
+//				// we going backwards yay
+//				int isRight = 1; //change this to -1 if left.
+//				
+//				autonomousQueue.add(new MoveForwardTask(this, 3.4, false)); //safewty firsat
+//				//autonomousQueue.add(new MoveForwardTask(this, 4.4, false));
+//				autonomousQueue.add(new TurnTask(this, -90 * isRight)); 
+//				autonomousQueue.add(new MoveForwardTask(this, -9, false));
+//				autonomousQueue.add(new TurnTask(this, -90 * isRight)); 
+//				autonomousQueue.add(new MoveForwardTask(this, -14.3, false));
+//			}
+//			
+//			autonomousInited = true;
+//			
+//		}
+		
+		SmartDashboard.putString("Autonomous Queue: ", autonomousQueue.toString());
+		if(!autonomousQueue.isEmpty()){
+			if(autonomousQueue.peek().run()){
+				autonomousQueue.poll();
+			}
+			displayOnSmartDashboard();
+			//SmartDashboard.putString("Current Task: ", autonomousQueue.peek().toString());
+			
+		}
 /*================================================Commented for testing==============================================================*\
 		// Immediately after the game starts, drop down the claw(can this be put in autonomousInit()?)
 
@@ -341,15 +389,7 @@ public class Robot extends IterativeRobot {
 		}
 \*========================================================================================================================================*/
 		
-		SmartDashboard.putString("Autonomous Queue: ", autonomousQueue.toString());
-		if(!autonomousQueue.isEmpty()){
-			if(autonomousQueue.peek().run()){
-				autonomousQueue.poll();
-			}
-			displayOnSmartDashboard();
-			//SmartDashboard.putString("Current Task: ", autonomousQueue.peek().toString());
-			
-		}
+		
 	}
 	
 	//=== Test ===\\
@@ -406,6 +446,8 @@ public class Robot extends IterativeRobot {
 
 		//actually needed now:		
 		
+		
+		
 		SmartDashboard.putString("Current Task: ", currentTask.toString());
 		
 		SmartDashboard.putNumber("Left Encoder: ", leftEncoder.getDistance());
@@ -416,12 +458,25 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putBoolean("Ladder Top Limit: ", topLimit.get());
 		SmartDashboard.putBoolean("Ladder Bottom Limit: ", armBottomLimit.get());
 		
-		SmartDashboard.putBoolean("Claw Opened Max: ", !clawOpeningLimit.get());
-		SmartDashboard.putBoolean("Claw Closed Max: ", !clawClosingLimit.get());
+		SmartDashboard.putBoolean("Moving", clawWillOpen ^ ladder.clawIsOpenedAllTheWayOrIsClosedAllTheWay());
+		SmartDashboard.putBoolean("Fully Open Close", ladder.clawIsOpenedAllTheWayOrIsClosedAllTheWay());
+		
 		SmartDashboard.putString("Claw Power: ", "" + claw.get() + " " + (claw.get() < 0 ? "Opening": "Closing"));
 		SmartDashboard.putNumber("Ladder Encoder: ", ladderEncoder.getDistance());	
 		
 		SmartDashboard.putNumber("Ladder Pos", ladder.getPos());
+		
+		/**
+		 * topLimit = new DigitalInput(9);
+//		frameBottomLimit = new DigitalInput(8);
+		armBottomLimit = new DigitalInput(7);
+		clawOpeningLimit = new DigitalInput(8);
+		clawClosingLimit = new DigitalInput(6); //was 9, changing for testing.
+		 */
+		SmartDashboard.putBoolean("9", clawClosingLimit.get());
+		SmartDashboard.putBoolean("8", clawOpeningLimit.get());
+		SmartDashboard.putBoolean("6", topLimit.get());
+		
 		
 	}
 }

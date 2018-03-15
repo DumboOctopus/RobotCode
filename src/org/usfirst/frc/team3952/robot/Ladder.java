@@ -16,6 +16,7 @@ public class Ladder {
 	private Talon ladder, coiler, claw;
 	private Encoder encoder;
 	private DigitalInput topLimit, armBottomLimit, clawOpeningLimit, clawClosingLimit;
+	private boolean clawIsOpenedAllTheWay = false;
 	
 	private int pos;
 	
@@ -125,6 +126,7 @@ public class Ladder {
 			claw.set(-CLOCKWISE);
 		}else {
 			claw.set(0);
+			clawIsOpenedAllTheWay = true;
 		}
 	}
 	
@@ -133,7 +135,12 @@ public class Ladder {
 			claw.set(CLOCKWISE);
 		}else {
 			claw.set(0);
+			clawIsOpenedAllTheWay = false;
 		}
+	}
+	
+	public boolean clawIsOpenedAllTheWayOrIsClosedAllTheWay(){
+		return clawIsOpenedAllTheWay;
 	}
 	
 	public void stopClaw() {
