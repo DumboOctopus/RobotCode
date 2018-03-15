@@ -135,6 +135,8 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopInit() {
 		stopMotors();
+		currentTask = new TeleopTask(this);
+		autonomousQueue = new LinkedList<>();
 		
 //		dropClaw = true;								// don't move these into teleop
 //		servoStartTime = System.nanoTime() / 1000000L;
@@ -213,7 +215,7 @@ public class Robot extends IterativeRobot {
 		//---------- Task running----------------------------------------//
 		if(currentTask.run()){
 			currentTask.cancel();
-			currentTask = new MultiTask(new TeleopTask(this), null);
+			currentTask = new TeleopTask(this);
 		}
 		
 		// ---------------SmartDashboard----------------------------------//
@@ -274,7 +276,7 @@ public class Robot extends IterativeRobot {
 		// Immediately after the game starts, drop down the claw(can this be put in autonomousInit()?)
 		SmartDashboard.putString("Game Specific Message: ",DriverStation.getInstance().getGameSpecificMessage());
 		//runs only once when we get real data
-//		if(!autonomousInited && !DriverStation.getInstance().getGameSpecificMessage().equals("")){
+//		if(System.nanoTime() / 1000000L - servoStartTime >= 3000 && !autonomousInited && !DriverStation.getInstance().getGameSpecificMessage().equals("")){
 //			String stuff = DriverStation.getInstance().getGameSpecificMessage(); // e.g. LRL
 //			
 //			String switchPos = stuff.substring(0, 1);
