@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.drive.*;
  *
  */
 public class MoveForwardTask extends Task {
-	private static final double CORRECTION_CONSTANT = 0.1;
+	private static final double CORRECTION_CONSTANT = 0.05;
 	
 	private MecanumDrive drive;
 	private Encoder leftEncoder, rightEncoder;
@@ -19,6 +19,9 @@ public class MoveForwardTask extends Task {
 	private boolean nudge;
 	
 	private boolean started = false;
+	
+	private ADXRS450_Gyro gyro;
+	private double initialGyro;
 	//private GraduallyGoTo ggt;
 	
 	public MoveForwardTask(Robot robot, double distance, boolean nudge) {
@@ -27,6 +30,7 @@ public class MoveForwardTask extends Task {
 		rightEncoder = robot.getRightEncoder();
 		this.distance = distance;
 		this.nudge = nudge;
+		this.gyro = robot.getGyro();
 		//ggt = new GraduallyGoTo(0, 0.009); 
 		/**
 		 * Observations:
@@ -53,6 +57,7 @@ public class MoveForwardTask extends Task {
 			// just because the left encoder is so much more accurate than right.
 			// not anymore. using both now.
 			initialDistance = (leftEncoder.getDistance() + rightEncoder.getDistance()) / 2;
+			initialGyro = gyro.getAngle();
 			started = true;
 		}
 		
@@ -62,8 +67,11 @@ public class MoveForwardTask extends Task {
 			return true;
 		} 
 	
-		double diff = leftEncoder.getRate() - rightEncoder.getRate();
+		//double diff = leftEncoder.getRate() - rightEncoder.getRate();
+		double diff = initialGyro - gyro.getAngle();
+		if(Math.abs(diff) < 1) diff = 0;
 		drive.driveCartesian(0, nudge? 0.3: 0.4, diff * CORRECTION_CONSTANT);		// we will need to recalibrate this later.
+		
 		return false;
 	
 	}

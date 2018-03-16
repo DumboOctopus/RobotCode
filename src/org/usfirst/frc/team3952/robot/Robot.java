@@ -108,7 +108,7 @@ public class Robot extends IterativeRobot {
 		//=== Task System Initialization===\\
 		
 		autonomousQueue = new LinkedList<>();
-		currentTask = new MultiTask(new TeleopTask(this), null);
+		currentTask = new TeleopTask(this);
 //		gyro.calibrate(); // Not necessary
 		
 		// SmartDashboard selecting autonomous
@@ -121,9 +121,9 @@ public class Robot extends IterativeRobot {
 //		startMillis = System.currentTimeMillis();
 //		shouldStop = false;
 		
-		//camera = CameraServer.getInstance().startAutomaticCapture();
-		//camera.setResolution(640, 480); //(160, 120) 
-
+		camera = CameraServer.getInstance().startAutomaticCapture();
+		camera.setResolution(640, 480); //(160, 120)
+		
 		stopMotors();
 	}
 	//=== Disabled ===\\
@@ -185,30 +185,25 @@ public class Robot extends IterativeRobot {
 
 		//------climber---------------------------------------------//
 		if(controller.coil()) {
-			coiler.set(-0.2);
+			coiler.set(-0.5);
 		} else {
 			coiler.set(0);
 		}
 		
 		//--------claw using toggling-----------------------------------//
-		
-		if(!controller.unsafeOpenClaw()){
-			if(controller.triggerClaw()) {
-				//if we aren't opening claw, we can go
-				//if we are opening, we can only go if clawOpening is Pressed (clawOpeningLimit.get() == false)
-				if(!clawWillOpen || clawWillOpen && !clawOpeningLimit.get() ) 
-					clawWillOpen = !clawWillOpen;
-				startMillis = System.currentTimeMillis();
-			}	
-			if(clawWillOpen) {
-				ladder.openClaw();
-			} else {
-				ladder.closeClaw();
-			}
-		} else{
-			//ladder.openClawUnsafe();
+		if(controller.triggerClaw()) {
+			//if we aren't opening claw, we can go
+			//if we are opening, we can only go if clawOpening is Pressed (clawOpeningLimit.get() == false)
+			if(!clawWillOpen || clawWillOpen && !clawOpeningLimit.get() ) 
+				clawWillOpen = !clawWillOpen;
+			startMillis = System.currentTimeMillis();
+		}	
+		if(clawWillOpen) {
+			ladder.openClaw();
+		} else {
+			ladder.closeClaw();
 		}
-		
+	
 		// Ladder safety
 		//ladder.safety();
 		
@@ -256,9 +251,7 @@ public class Robot extends IterativeRobot {
 		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 12000) {	// stop servo after ~5 seconds
 			servo.setPosition(0.515);		// 0.515 makes it stop
 			dropClaw = false;
-			autonomousQueue.add(new MoveLadderTask(this, 1));
-		}
-		
+		}		
 		/**
 		 * To test at the field
 		 * 	Drop claw again testing lo,l
@@ -276,33 +269,40 @@ public class Robot extends IterativeRobot {
 		// Immediately after the game starts, drop down the claw(can this be put in autonomousInit()?)
 		SmartDashboard.putString("Game Specific Message: ",DriverStation.getInstance().getGameSpecificMessage());
 		//runs only once when we get real data
-//		if(System.nanoTime() / 1000000L - servoStartTime >= 3000 && !autonomousInited && !DriverStation.getInstance().getGameSpecificMessage().equals("")){
-//			String stuff = DriverStation.getInstance().getGameSpecificMessage(); // e.g. LRL
-//			
-//			String switchPos = stuff.substring(0, 1);
-//			String scalePos = stuff.substring(1, 2);
-//			String ourPosition = "L"; // L, R, M //
-////			String ourPosition = autonomousChooser.getSelected(); // L, R, M
-//			
-//			SmartDashboard.putString("In Game Specific Message", stuff);
-//			
-//			if(ourPosition.equals("L") || ourPosition.equals("R")){
-//				autonomousQueue.add(new MoveForwardTask(this, 10, false));
-//			} else if(ourPosition.equals("M")){
-//				// we going backwards yay
-//				int isRight = 1; //change this to -1 if left.
-//				
-//				autonomousQueue.add(new MoveForwardTask(this, 3.4, false)); //safewty firsat
-//				//autonomousQueue.add(new MoveForwardTask(this, 4.4, false));
-//				autonomousQueue.add(new TurnTask(this, -90 * isRight)); 
-//				autonomousQueue.add(new MoveForwardTask(this, -9, false));
-//				autonomousQueue.add(new TurnTask(this, -90 * isRight)); 
-//				autonomousQueue.add(new MoveForwardTask(this, -14.3, false));
-//			}
-//			
-//			autonomousInited = true;
-//			
-//		}
+		if(System.nanoTime() / 1000000L - servoStartTime >= 3000 && !autonomousInited && !DriverStation.getInstance().getGameSpecificMessage().equals("")){
+			String stuff = DriverStation.getInstance().getGameSpecificMessage(); // e.g. LRL
+			
+			String switchPos = stuff.substring(0, 1);
+			String scalePos = stuff.substring(1, 2);
+			String ourPosition = "o"; // L, R, M //
+//			String ourPosition = autonomousChooser.getSelected(); // L, R, M
+			
+			SmartDashboard.putString("In Game Specific Message", stuff);
+			
+			autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 3, false), new MoveLadderTask(this, 1)));
+			
+			if(ourPosition.equals("L")){
+				autonomousQueue.add(new MoveForwardTask(this, 12, false)); //17.7
+			} else if(ourPosition.equals("M")){
+				// we going backwards yay
+				int isRight = 1; //change this to -1 if left.
+				
+				autonomousQueue.add(new MoveForwardTask(this, 3.4, false)); //safewty firsat
+				//autonomousQueue.add(new MoveForwardTask(this, 4.4, false));
+				autonomousQueue.add(new TurnTask(this, -90 * isRight)); 
+				autonomousQueue.add(new MoveForwardTask(this, -9, false));
+				autonomousQueue.add(new TurnTask(this, -90 * isRight)); 
+				autonomousQueue.add(new MoveForwardTask(this, -14.3, false));
+			} else if(ourPosition.equals("R"))
+			{
+				autonomousQueue.add(new MoveForwardTask(this, 12, false)); //17.7
+				//
+				//autonomousQueue.add(new MoveForwardTask(this, ))
+			}
+			
+			autonomousInited = true;
+			
+		}
 		
 		SmartDashboard.putString("Autonomous Queue: ", autonomousQueue.toString());
 		if(!autonomousQueue.isEmpty()){
@@ -337,25 +337,22 @@ public class Robot extends IterativeRobot {
 //				autonomousQueue.add(new TurnTask(this,-90));
 //				autonomousQueue.add(new MoveForwardTask(this, 4.5));
 //				autonomousQueue.add(new TurnTask(this,90));
-//				autonomousQueue.add(new MoveForwardTask(this,21));
-//				ladder.setPos(2);
+//				autonomousQueue.add(new MultiTask(new MoveForwardTask(this,21), new MoveLadderTask(this, 2)));
 //				autonomousQueue.add(new TurnTask(this, 90));
-//				ladder.openClaw();
+//				autonomousQueue.add(new ChangeClawTask(this, true));
 //			}
 //			//middle position with right scale open
 //			if(ourPosition.equals("M") && scalePos.equals("R")){
 //				autonomousQueue.add(new TurnTask(this, 90));
 //				autonomousQueue.add(new MoveForwardTask(this, 8.9));
 //				autonomousQueue.add(new TurnTask(this,-90));
-//				autonomousQueue.add(new MoveForwardTask(this, 21));
-//				ladder.setPos(2);
+//				autonomousQueue.add(new MultiTask(new MoveForwardTask(this,21), new MoveLadderTask(this, 2)));
 //				autonomousQueue.add(new TurnTask(this, -90));
-//				ladder.openClaw();
+//				autonomousQueue.add(new ChangeClawTask(this, true));
 //			}
 //			//left position with left switch
 //			if(ourPosition.equals("L") && switchPos.equals("L")){
-//				autonomousQueue.add(new MoveForwardTask(this, 10.3));
-//				ladder.setPos(1);
+//				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 10.3), new MoveLadderTask(this, 1)));
 //				autonomousQueue.add(new TurnTask(this, 90));
 //				ladder.openClaw();
 //			}
@@ -364,25 +361,22 @@ public class Robot extends IterativeRobot {
 //				autonomousQueue.add(new TurnTask(this,90));
 //				autonomousQueue.add(new MoveForwardTask(this,18.7));
 //				autonomousQueue.add(new TurnTask(this,-90));
-//				autonomousQueue.add(new MoveForwardTask(this, 10.3));
-//				ladder.setPos(1);
+//				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 10.3), new MoveLadderTask(this, 1)));
 //				autonomousQueue.add(new TurnTask(this,-90));	
 //				ladder.openClaw();			
 //			}	
 //			//right position with right switch
 //			if(ourPosition.equals("R") && switchPos.equals("R")){
-//				autonomousQueue.add(new MoveForwardTask(this, 10.3));
-//				ladder.setPos(1);
+//				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 10.3), new MoveLadderTask(this, 1)));
 //				autonomousQueue.add(new TurnTask(this, -90));
 //				ladder.openClaw();
 //			}
 //			// right position with left switch
 //			if(ourPosition.equals("R") && switchPos.equals("L")){
-//				autonomousQueue.add(new TurnTask(this,-90));
-//				autonomousQueue.add(new MoveForwardTask(this,18.7));
+//				autonomousQueue.add(new TurnTask(this, -90));
+//				autonomousQueue.add(new MoveForwardTask(this, 18.7));
 //				autonomousQueue.add(new TurnTask(this,90));
-//				autonomousQueue.add(new MoveForwardTask(this, 10.3));
-//				ladder.setPos(1);
+//				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 10.3), new MoveLadderTask(this, 1)));
 //				autonomousQueue.add(new TurnTask(this,90));
 //				ladder.openClaw();			
 //			}	
@@ -395,10 +389,26 @@ public class Robot extends IterativeRobot {
 	}
 	
 	//=== Test ===\\
+	@Override
+	public void testInit(){
+		servo.setPosition(0.515);
+		autonomousQueue = new LinkedList<>();
+		autonomousQueue.add(new ChangeClawTask(this, true));
+		autonomousQueue.add(new ChangeClawTask(this, false));
+		autonomousQueue.add(new ChangeClawTask(this, true));
+	}
+	
 	
 	@Override
 	public void testPeriodic(){
-		teleopPeriodic();
+		if(!autonomousQueue.isEmpty()){
+			if(autonomousQueue.peek().run()){
+				autonomousQueue.poll();
+			}
+			displayOnSmartDashboard();
+			SmartDashboard.putString("Current Task: ", autonomousQueue.peek() == null ? "null" : autonomousQueue.peek().toString());
+			
+		}
 	}
 	
 	//=== Getters ===\\
@@ -421,6 +431,10 @@ public class Robot extends IterativeRobot {
 	
 	public ADXRS450_Gyro getGyro(){
 		return gyro;
+	}
+	
+	public boolean getClawWillOpen(){
+		return clawWillOpen;
 	}
 	
 	public Ladder getLadder() {
