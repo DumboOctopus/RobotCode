@@ -1,5 +1,5 @@
 {
-  "dividerPosition": 0.2528675703858186,
+  "dividerPosition": 0.25495307612095935,
   "tabPane": [
     {
       "title": "SmartDashboard",
@@ -113,7 +113,7 @@
             "content": {
               "_type": "Boolean Box",
               "_source0": "network_table:///SmartDashboard/Moving",
-              "_title": "/SmartDashboard/Moving",
+              "_title": "Moving",
               "colorWhenTrue": "#FFFF4DFF",
               "colorWhenFalse": "#000000FF"
             }
@@ -126,7 +126,7 @@
             "content": {
               "_type": "Boolean Box",
               "_source0": "network_table:///SmartDashboard/Fully Open Close",
-              "_title": "/SmartDashboard/Fully Open Close",
+              "_title": "Fully Open",
               "colorWhenTrue": "#188622FF",
               "colorWhenFalse": "#E64D4DFF"
             }

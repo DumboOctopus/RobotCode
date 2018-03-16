@@ -269,17 +269,17 @@ public class Robot extends IterativeRobot {
 		// Immediately after the game starts, drop down the claw(can this be put in autonomousInit()?)
 		SmartDashboard.putString("Game Specific Message: ",DriverStation.getInstance().getGameSpecificMessage());
 		//runs only once when we get real data
-		if(System.nanoTime() / 1000000L - servoStartTime >= 3000 && !autonomousInited && !DriverStation.getInstance().getGameSpecificMessage().equals("")){
-			String stuff = DriverStation.getInstance().getGameSpecificMessage(); // e.g. LRL
+		if(System.nanoTime() / 1000000L - servoStartTime >= 3000 && !autonomousInited/* && !DriverStation.getInstance().getGameSpecificMessage().equals("")*/){
+			//String stuff = DriverStation.getInstance().getGameSpecificMessage(); // e.g. LRL
 			
-			String switchPos = stuff.substring(0, 1);
-			String scalePos = stuff.substring(1, 2);
-			String ourPosition = "o"; // L, R, M //
+//			String switchPos = stuff.substring(0, 1);
+//			String scalePos = stuff.substring(1, 2);
+			String ourPosition = "R"; // L, R, M //
 //			String ourPosition = autonomousChooser.getSelected(); // L, R, M
 			
-			SmartDashboard.putString("In Game Specific Message", stuff);
+//			SmartDashboard.putString("In Game Specific Message", stuff);
 			
-			autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 3, false), new MoveLadderTask(this, 1)));
+			//autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 3, false), new MoveLadderTask(this, 1)));
 			
 			if(ourPosition.equals("L")){
 				autonomousQueue.add(new MoveForwardTask(this, 12, false)); //17.7
