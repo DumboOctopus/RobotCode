@@ -74,6 +74,7 @@ public class Ladder {
 			if(armBottomLimit.get()) { // now we at the bottom
 				pos = 0;
 				encoder.reset();
+				ladder.set(0);
 				return true;
 			} else {  // if we aren't at the bottom
 				retractLadder();

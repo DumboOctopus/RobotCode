@@ -295,6 +295,7 @@ public class Robot extends IterativeRobot {
 				autonomousQueue.add(new MoveForwardTask(this, -14.3, false));
 			} else if(ourPosition.equals("R"))
 			{
+				autonomousQueue.add(new MoveLadderTask(this, 1));
 				autonomousQueue.add(new MoveForwardTask(this, 12, false)); //17.7
 				//
 				//autonomousQueue.add(new MoveForwardTask(this, ))
@@ -354,6 +355,7 @@ public class Robot extends IterativeRobot {
 //			if(ourPosition.equals("L") && switchPos.equals("L")){
 //				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 10.3), new MoveLadderTask(this, 1)));
 //				autonomousQueue.add(new TurnTask(this, 90));
+ * 
 //				ladder.openClaw();
 //			}
 //			// left position with right switch
@@ -393,9 +395,8 @@ public class Robot extends IterativeRobot {
 	public void testInit(){
 		servo.setPosition(0.515);
 		autonomousQueue = new LinkedList<>();
-		autonomousQueue.add(new ChangeClawTask(this, true));
-		autonomousQueue.add(new ChangeClawTask(this, false));
-		autonomousQueue.add(new ChangeClawTask(this, true));
+		autonomousQueue.add(new MoveForwardTask(this, 5, false));
+		autonomousQueue.add(new OpenClawTask(this));
 	}
 	
 	
