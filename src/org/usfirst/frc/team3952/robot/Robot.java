@@ -216,7 +216,7 @@ public class Robot extends IterativeRobot {
 		if(controller.joystick.getRawButton(2)) {
 			ladder.openClawUnsafe();
 		} else if(controller.joystick.getTrigger()) {
-			ladder.closeClaw();
+			ladder.closeClawUnsafe();
 		} else {
 			ladder.stopClaw();
 		}
@@ -300,7 +300,7 @@ public class Robot extends IterativeRobot {
 			String stuff = DriverStation.getInstance().getGameSpecificMessage(); // e.g. LRL
 			String switchPos = stuff.substring(0, 1);
 			String scalePos = stuff.substring(1, 2);
-			String ourPosition = "L"; // L, R, M //
+			String ourPosition = "R"; // L, R, M //
 			///String ourPosition = autonomousChooser.getSelected(); // L, R, M
 			
 //			SmartDashboard.putString("In Game Specific Message", stuff);
@@ -309,10 +309,12 @@ public class Robot extends IterativeRobot {
 			
 			if(ourPosition.equals("L")){
 				//autonomousQueue.add(new MoveLadderTask(this, 1));
-				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 5, false), new MoveLadderTask(this, 1))); //17.7
-				//0a/utonomousQueue.add(new TurnTask(this, 90));  //this is dangerous but we will try.
-				//autonomousQueue.add(new MoveForwardTask(this, 1, true)); //do nudge;
-				//autonomousQueue.add(new OpenClawTask(this));
+				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 9, false), new MoveLadderTask(this, 1))); //17.7
+				if(switchPos.equals("L")) {
+					autonomousQueue.add(new TurnTask(this, 90));  //this is dangerous but we will try.
+					autonomousQueue.add(new MoveForwardTask(this, 1, true)); //do nudge;
+					autonomousQueue.add(new OpenClawTask(this));
+				}
 			} else if(ourPosition.equals("M")){
 				// we going backwards yay
 				int isRight = 0; //change this to -1 if left.
@@ -331,9 +333,9 @@ public class Robot extends IterativeRobot {
 				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 12, false), new MoveLadderTask(this, 1))); //17.7
 				
 				if(switchPos.equals("R")) {
-					//autonomousQueue.add(new TurnTask(this, -90)); //this is dangerous
-					//autonomousQueue.add(new MoveForwardTask(this, 1, true)); //do nudge;
-					//autonomousQueue.add(new OpenClawTask(this));
+					autonomousQueue.add(new TurnTask(this, -90)); //this is dangerous
+					autonomousQueue.add(new MoveForwardTask(this, 1, true)); //do nudge;
+					autonomousQueue.add(new OpenClawTask(this));
 				}
 				//
 				//

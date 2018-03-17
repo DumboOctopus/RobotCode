@@ -28,15 +28,15 @@ public class Controller {
 	// horizontal / lateral movement = k * ln(|x| + 1 - dead zone) + C
 	// C = minimum velocity
 	// k = (max velocity - C) / ln(1 + 1 - dead zone)		
-	private double c = 0.1;
-	private double deadZone = 0.2;
+	public double c = 0.1;
+	public double deadZone = 0.2;
 	public double max = 0.8;
-	private double k = (max - c) / Math.log(2 - deadZone);
+	public double k = (max - c) / Math.log(2 - deadZone);
 	
-	private double cx = 0.2;
-	private double deadZonex = 0.2;
+	public double cx = 0.2;
+	public double deadZonex = 0.2;
 	public double maxx = 0.8;
-	private double kx = (maxx - cx) / Math.log(2 - deadZonex);
+	public double kx = (maxx - cx) / Math.log(2 - deadZonex);
 	
 	private double ct = 0.08;
 	private double deadZonet = 0.08;

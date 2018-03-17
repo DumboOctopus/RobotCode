@@ -1,5 +1,5 @@
 {
-  "dividerPosition": 0.2591240875912409,
+  "dividerPosition": 0.25920084121976866,
   "tabPane": [
     {
       "title": "SmartDashboard",
@@ -125,7 +125,7 @@
             "content": {
               "_type": "Boolean Box",
               "_source0": "network_table:///SmartDashboard/Claw Will Open",
-              "_title": "SmartDashboard/Claw Will Open",
+              "_title": "/SmartDashboard/Claw Will Open",
               "colorWhenTrue": "#188622FF",
               "colorWhenFalse": "#E64D4DFF"
             }

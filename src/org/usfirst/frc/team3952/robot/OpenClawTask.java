@@ -2,6 +2,8 @@ package org.usfirst.frc.team3952.robot;
 
 public class OpenClawTask extends Task {
 	private Ladder ladder;
+	private boolean init = true;
+	private long startTime;
 	private Robot r;
 	
 	public OpenClawTask(Robot robot){
@@ -11,8 +13,16 @@ public class OpenClawTask extends Task {
 	
 	@Override
 	public boolean run() {
-		ladder.openClaw();
-		return ladder.clawIsOpenedAllTheWayOrIsClosedAllTheWay();
+		if(init) {
+			startTime = System.currentTimeMillis();
+			init = false;
+		}
+		ladder.openClawUnsafe();
+		if(System.currentTimeMillis() - startTime >= 2000) {
+			ladder.stopClaw();
+			return true;
+		}
+		return false;
 	}
 
 	@Override
