@@ -312,8 +312,9 @@ public class Robot extends IterativeRobot {
 				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 9, false), new MoveLadderTask(this, 1))); //17.7
 				if(switchPos.equals("L")) {
 					autonomousQueue.add(new TurnTask(this, 90));  //this is dangerous but we will try.
-					//autonomousQueue.add(new MoveForwardTask(this, 1, true)); //do nudge;
-					//autonomousQueue.add(new OpenClawTask(this));
+					autonomousQueue.add(new MoveForwardTask(this, 3, false));
+					autonomousQueue.add(new MoveForwardTask(this, 2, true)); //do nudge;
+					autonomousQueue.add(new OpenClawTask(this));
 				}
 			} else if(ourPosition.equals("M")){
 				// we going backwards yay
@@ -322,20 +323,21 @@ public class Robot extends IterativeRobot {
 				if(switchPos.equals("L")) isRight = -1; //we are going left
 				if(switchPos.equals("R")) isRight = 1; //we are going right;
 				
-				autonomousQueue.add(new MoveForwardTask(this, 3.4, false)); //safewty firsat, 4.4
+				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 3.9, false), new MoveLadderTask(this, 1))); //safewty firsat, 4.4
 				autonomousQueue.add(new TurnTask(this, 90 * isRight)); 
-				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 6, false), new MoveLadderTask(this, 1))); //9 for all the way
+				autonomousQueue.add(new MoveForwardTask(this, 3, false)); //9 for all the way
 				autonomousQueue.add(new TurnTask(this, -90 * isRight)); 
-				autonomousQueue.add(new MoveForwardTask(this, 1, true));
+				autonomousQueue.add(new MoveForwardTask(this, 2.6, true));
 			} else if(ourPosition.equals("R"))
 			{
 				//autonomousQueue.add(new MoveLadderTask(this, 1));
-				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 12, false), new MoveLadderTask(this, 1))); //17.7
+				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 9, false), new MoveLadderTask(this, 1))); //17.7
 				
 				if(switchPos.equals("R")) {
 					autonomousQueue.add(new TurnTask(this, -90)); //this is dangerous
-					//autonomousQueue.add(new MoveForwardTask(this, 1, true)); //do nudge;
-					//autonomousQueue.add(new OpenClawTask(this));
+					autonomousQueue.add(new MoveForwardTask(this, 3, false));
+					autonomousQueue.add(new MoveForwardTask(this, 2, true)); //do nudge;
+					autonomousQueue.add(new OpenClawTask(this));
 				}
 				//
 				//
@@ -436,10 +438,10 @@ public class Robot extends IterativeRobot {
 	public void testInit(){
 		autonomousQueue = new LinkedList<>();
 		//autonomousQueue.add(new MoveLadderTask(this, 1));
-		autonomousQueue.add(new TurnTask(this, 180));
-		autonomousQueue.add(new TurnTask(this, -180));
+		//autonomousQueue.add(new TurnTask(this, 180));
+		//autonomousQueue.add(new TurnTask(this, -180));
 		//autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 3, false), new MoveLadderTask(this, 1)));
-		//autonomousQueue.add(new OpenClawTask(this));
+		autonomousQueue.add(new OpenClawTask(this));
 	}
 	
 	

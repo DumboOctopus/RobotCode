@@ -18,7 +18,7 @@ public class OpenClawTask extends Task {
 			init = false;
 		}
 		ladder.openClawUnsafe();
-		if(System.currentTimeMillis() - startTime >= 2000) {
+		if(System.currentTimeMillis() - startTime >= 1000) {
 			ladder.stopClaw();
 			return true;
 		}
