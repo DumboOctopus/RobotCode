@@ -38,7 +38,7 @@ public class TurnTask extends Task {
 		
 		long nowMillis = System.currentTimeMillis();
 		// check if we are done
-		if(differenceAngle(gyro.getAngle() + gyro.getRate() * (nowMillis - lastMillis) / 1000.0, startingAngle + degrees) < 5.0){
+		if(differenceAngle(gyro.getAngle() + gyro.getRate() * (nowMillis - lastMillis) / 1000.0, startingAngle + degrees) < 7.0){
 			drive.driveCartesian(0, 0, 0);
 			return true;
 		}

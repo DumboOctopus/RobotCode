@@ -41,7 +41,7 @@ public class Robot extends IterativeRobot {
 	private DigitalInput topLimit, armBottomLimit, clawOpeningLimit, clawClosingLimit;
 	private Ladder ladder;
 	private Servo servo;
-	private boolean dropClaw;
+	private boolean dropClaw, stopCoiler;
 	private long servoStartTime;
 	
 	//=== Task System ===\\
@@ -243,13 +243,14 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousInit(){
 		dropClaw = true;								// don't move these into teleop
+		stopCoiler = false;
 		servoStartTime = System.nanoTime() / 1000000L;
-		servo.setPosition(0);
+		//servo.setPosition(0);
 		
 		//autonomousQueue.add(new ResetLadderTask(this));
 		//autonomousQueue.add(new MoveForwardTask(this, 6, false));
 		stopMotors();
-		
+		coiler.set(-0.3);
 		//
 	//	Servo servo =new Servo(1);
 	//	servo.set(0.5);
@@ -265,10 +266,19 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void autonomousPeriodic(){
-		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 12000) {	// stop servo after ~5 seconds
-			servo.setPosition(0.515);		// 0.515 makes it stop
+//		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 12000) {	// stop servo after ~5 seconds
+//			servo.setPosition(0.515);		// 0.515 makes it stop
+//			dropClaw = false;
+//		}		
+		if(dropClaw && System.nanoTime() / 1000000L - servoStartTime >= 1000) {
+			coiler.set(0);
 			dropClaw = false;
-		}		
+			//stopCoiler = true;
+		}/* else if(stopCoiler && System.nanoTime() / 1000000L - servoStartTime >= 2000) {
+			coiler.set(0);
+			stopCoiler = false;
+		}*/
+		
 		/**
 		 * To test at the field
 		 * 	Drop claw again testing lo,l
@@ -299,27 +309,26 @@ public class Robot extends IterativeRobot {
 			
 			if(ourPosition.equals("L")){
 				//autonomousQueue.add(new MoveLadderTask(this, 1));
-				autonomousQueue.add(new MoveForwardTask(this, 12, false)); //17.7
+				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 5, false), new MoveLadderTask(this, 1))); //17.7
 				//0a/utonomousQueue.add(new TurnTask(this, 90));  //this is dangerous but we will try.
 				//autonomousQueue.add(new MoveForwardTask(this, 1, true)); //do nudge;
 				//autonomousQueue.add(new OpenClawTask(this));
 			} else if(ourPosition.equals("M")){
 				// we going backwards yay
-				int isRight = 1; //change this to -1 if left.
+				int isRight = 0; //change this to -1 if left.
 				
 				if(switchPos.equals("L")) isRight = -1; //we are going left
 				if(switchPos.equals("R")) isRight = 1; //we are going right;
 				
-				autonomousQueue.add(new MoveForwardTask(this, 3.4, false)); //safewty firsat
-				//autonomousQueue.add(new MoveForwardTask(this, 4.4, false));
+				autonomousQueue.add(new MoveForwardTask(this, 3.4, false)); //safewty firsat, 4.4
 				autonomousQueue.add(new TurnTask(this, 90 * isRight)); 
-				autonomousQueue.add(new MoveForwardTask(this, 6, false)); //9 for all the way
+				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 6, false), new MoveLadderTask(this, 1))); //9 for all the way
 				autonomousQueue.add(new TurnTask(this, -90 * isRight)); 
 				autonomousQueue.add(new MoveForwardTask(this, 1, true));
 			} else if(ourPosition.equals("R"))
 			{
 				//autonomousQueue.add(new MoveLadderTask(this, 1));
-				autonomousQueue.add(new MoveForwardTask(this, 12, false)); //17.7
+				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 12, false), new MoveLadderTask(this, 1))); //17.7
 				
 				if(switchPos.equals("R")) {
 					//autonomousQueue.add(new TurnTask(this, -90)); //this is dangerous
@@ -423,10 +432,11 @@ public class Robot extends IterativeRobot {
 	//=== Test ===\\
 	@Override
 	public void testInit(){
-		servo.setPosition(0.515);
 		autonomousQueue = new LinkedList<>();
 		//autonomousQueue.add(new MoveLadderTask(this, 1));
-		autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 3, false), new MoveLadderTask(this, 1)));
+		autonomousQueue.add(new TurnTask(this, 180));
+		autonomousQueue.add(new TurnTask(this, -180));
+		//autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 3, false), new MoveLadderTask(this, 1)));
 		//autonomousQueue.add(new OpenClawTask(this));
 	}
 	

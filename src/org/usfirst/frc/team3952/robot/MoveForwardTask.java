@@ -2,6 +2,7 @@ package org.usfirst.frc.team3952.robot;
 
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.drive.*;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
 /**
@@ -70,7 +71,8 @@ public class MoveForwardTask extends Task {
 		//double diff = leftEncoder.getRate() - rightEncoder.getRate();
 		double diff = initialGyro - gyro.getAngle();
 		if(Math.abs(diff) < 1) diff = 0;
-		drive.driveCartesian(0, nudge? 0.3: 0.4, diff * CORRECTION_CONSTANT);		// we will need to recalibrate this later.
+		SmartDashboard.putNumber("Gyro diff", diff);
+		drive.driveCartesian(0, nudge? 0.3: /*0.4*/0.65, 0/*diff * CORRECTION_CONSTANT*/);		// we will need to recalibrate this later.
 		
 		return false;
 	

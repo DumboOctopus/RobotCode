@@ -1,5 +1,5 @@
 {
-  "dividerPosition": 0.2570385818561001,
+  "dividerPosition": 0.2591240875912409,
   "tabPane": [
     {
       "title": "SmartDashboard",
@@ -20,20 +20,6 @@
               "_type": "Text View",
               "_source0": "network_table:///SmartDashboard/Current Task: ",
               "_title": "Current Task: "
-            }
-          },
-          "7,0": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Simple Dial",
-              "_source0": "network_table:///SmartDashboard/Gyro: ",
-              "_title": "Gyro",
-              "minValue": -180.0,
-              "maxValue": 180.0,
-              "valueVisible": true
             }
           },
           "0,0": {
@@ -96,7 +82,7 @@
           },
           "5,1": {
             "size": [
-              5,
+              4,
               5
             ],
             "content": {
@@ -107,7 +93,7 @@
           },
           "5,0": {
             "size": [
-              2,
+              1,
               1
             ],
             "content": {
@@ -118,15 +104,28 @@
               "colorWhenFalse": "#000000FF"
             }
           },
-          "8,0": {
+          "6,0": {
             "size": [
-              2,
+              1,
               1
             ],
             "content": {
               "_type": "Boolean Box",
               "_source0": "network_table:///SmartDashboard/Fully Open Close",
               "_title": "Fully Open",
+              "colorWhenTrue": "#188622FF",
+              "colorWhenFalse": "#E64D4DFF"
+            }
+          },
+          "7,0": {
+            "size": [
+              2,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Claw Will Open",
+              "_title": "SmartDashboard/Claw Will Open",
               "colorWhenTrue": "#188622FF",
               "colorWhenFalse": "#E64D4DFF"
             }
