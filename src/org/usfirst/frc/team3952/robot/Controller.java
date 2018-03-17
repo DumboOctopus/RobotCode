@@ -69,7 +69,7 @@ public class Controller {
 	
 	// positive = clockwise
 	public double getRotation() {
-		double t = joystick.getZ();
+		double t =  joystick.getZ();
 		return Math.abs(t) >= deadZonet ? 
 			   kt * Math.signum(t) * (Math.log(Math.abs(t) + 1 - deadZonet) + ct)
 			   :

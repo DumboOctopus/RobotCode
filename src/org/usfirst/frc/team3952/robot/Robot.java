@@ -209,11 +209,7 @@ public class Robot extends IterativeRobot {
 //			}
 //		}
 		
-		if(controller.joystick.getTriggerPressed()) {
-			startMillis = System.currentTimeMillis();
-		}
-		
-		if(controller.joystick.getRawButton(2)) {
+		if(controller.joystick.getRawButton(2)) {	// VERY IMPORTANT: 2 for Controller, 3 for BadController
 			ladder.openClawUnsafe();
 		} else if(controller.joystick.getTrigger()) {
 			ladder.closeClawUnsafe();
@@ -323,18 +319,19 @@ public class Robot extends IterativeRobot {
 				if(switchPos.equals("L")) isRight = -1; //we are going left
 				if(switchPos.equals("R")) isRight = 1; //we are going right;
 				
-				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 3.9, false), new MoveLadderTask(this, 1))); //safewty firsat, 4.4
+				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 4, false), new MoveLadderTask(this, 1))); //safewty firsat, 4.4
 				autonomousQueue.add(new TurnTask(this, 90 * isRight)); 
 				autonomousQueue.add(new MoveForwardTask(this, 3, false)); //9 for all the way
 				autonomousQueue.add(new TurnTask(this, -90 * isRight)); 
-				autonomousQueue.add(new MoveForwardTask(this, 2.6, true));
+				autonomousQueue.add(new MoveForwardTask(this, 4, false));
+				autonomousQueue.add(new MoveForwardTask(this, 3, true));
 			} else if(ourPosition.equals("R"))
 			{
 				//autonomousQueue.add(new MoveLadderTask(this, 1));
-				autonomousQueue.add(new MultiTask(new MoveForwardTask(this, 9, false), new MoveLadderTask(this, 1))); //17.7
+				autonomousQueue.add("R".equals(switchPos) ? new MultiTask(new QueuedTask(new MoveForwardTask(this, 9, false), new TurnTask(this, -90)), new MoveLadderTask(this, 1) : new MultiTask(new MoveForwardTask(this, 9, false), new TurnTask(this, -90)));
+				//(new MultiTask(new MoveForwardTask(this, 9, false)), new MoveLadderTask(this, 1))); //17.7
 				
 				if(switchPos.equals("R")) {
-					autonomousQueue.add(new TurnTask(this, -90)); //this is dangerous
 					autonomousQueue.add(new MoveForwardTask(this, 3, false));
 					autonomousQueue.add(new MoveForwardTask(this, 2, true)); //do nudge;
 					autonomousQueue.add(new OpenClawTask(this));
