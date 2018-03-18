@@ -5,6 +5,17 @@ import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
 //=== Not Used Yet ===\\
 
+/**
+ *
+ * Technique 1:
+ * 		Using a speed vector based on encoders.
+ * 		Probably not too accurate
+ * Technique 2:
+ * 		Using gyro.
+ * 		probs more accurate except we need to check reliability of gyro.
+ *
+ */
+
 public class StrafeAndForwardTask extends Task {
 
 	private static double MAX_SPEED = 0.3;

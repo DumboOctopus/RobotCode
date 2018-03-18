@@ -2,21 +2,15 @@ package org.usfirst.frc.team3952.robot;
 
 import edu.wpi.first.wpilibj.Joystick;
 
-public class BadController extends Controller {
-	//=== Buttons ===\\
-		// TODO: decide these
-//		public static final int CANCEL_TASK = 1;
+public class BadController implements Controller {
+
 		public static final int EXTEND_LADDER = 6;
 		public static final int RETRACT_LADDER = 7;
-		//why do we have these two?
-//		public static final int LADDER_UP = 6;
-//		public static final int LADDER_DOWN = 8;
 		public static final int TRIGGER_CLAW = 1;
-//		public static final int OPEN_CLAW = 1;
-//		public static final int CLOSE_CLAW = 2;
 		public static final int COIL = 8, COIL2 = 9;
 		public static final int TOGGLE_SPEED = 11;
 		public static final int USE_UNSAFE_CLAW_OPEN = 12;
+		public static final int OPEN_CLAW_UNSAFE = 3;
 		public static final int TURN_LEFT = 4;
 		public static final int TURN_RIGHT = 5;
 		
@@ -69,7 +63,6 @@ public class BadController extends Controller {
 			double t = joystick.getRawButton(TURN_LEFT) ? -0.4 : joystick.getRawButton(TURN_RIGHT) ? 0.4 : 0;
 			return t;
 			
-			//return 0.4 * joystick.getZ();
 		}
 		
 		//=== Buttons ===\\
@@ -135,6 +128,11 @@ public class BadController extends Controller {
 			k = (max - c) / Math.log(2 - deadZone);
 			kx = (maxx - cx) / Math.log(2 - deadZonex);
 			
+		}
+
+		@Override
+		public boolean unsafeCloseClaw() {
+			return joystick.getTrigger();
 		}
 		
 //		public boolean pressedExtendLadder(){

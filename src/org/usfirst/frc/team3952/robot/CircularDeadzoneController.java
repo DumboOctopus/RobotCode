@@ -1,6 +1,6 @@
 package org.usfirst.frc.team3952.robot;
 
-public class CircularDeadzoneController extends Controller {
+public class CircularDeadzoneController extends SideWinderController {
 	public CircularDeadzoneController() {
 		super();
 	}

@@ -51,10 +51,10 @@ public class Ladder {
 		} else {
 			ladder.set(0);
 			encoder.reset();
-		}
-		
+		}	
 	}
 	
+	@Deprecated
 	public void toggleLadder(){
 		if(ladderSpeedUp > 0.6){
 			ladderSpeedUp = 0.5;
@@ -113,14 +113,6 @@ public class Ladder {
 		return true;
 	}
 	 
-	// TODO: testing required, has to go clockwise
-	public void coil() {
-		coiler.set(-0.4);
-	}
-	
-	public void stopCoiling() {
-		coiler.set(0);
-	}
 	
 	public void openClaw() {
 		if(clawOpeningLimit.get()) {
